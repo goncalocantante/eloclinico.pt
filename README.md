@@ -8,7 +8,7 @@ This is a starter template for building a SaaS application using **Next.js** wit
 
 - Marketing landing page (`/`) with animated Terminal element
 - Pricing page (`/pricing`) which connects to Stripe Checkout
-- Dashboard pages with CRUD operations on users/teams
+- Dashboard pages with CRUD operations on users/clinics
 - Basic RBAC with Owner and Member roles
 - Subscription management with Stripe Customer Portal
 - Email/password authentication with JWTs stored to cookies

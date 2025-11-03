@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "activity_logs" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"team_id" integer NOT NULL,
+	"clinic_id" integer NOT NULL,
 	"user_id" integer,
 	"action" text NOT NULL,
 	"timestamp" timestamp DEFAULT now() NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS "activity_logs" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "invitations" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"team_id" integer NOT NULL,
+	"clinic_id" integer NOT NULL,
 	"email" varchar(255) NOT NULL,
 	"role" varchar(50) NOT NULL,
 	"invited_by" integer NOT NULL,
@@ -17,15 +17,15 @@ CREATE TABLE IF NOT EXISTS "invitations" (
 	"status" varchar(20) DEFAULT 'pending' NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "team_members" (
+CREATE TABLE IF NOT EXISTS "clinic_members" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" integer NOT NULL,
-	"team_id" integer NOT NULL,
+	"clinic_id" integer NOT NULL,
 	"role" varchar(50) NOT NULL,
 	"joined_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "teams" (
+CREATE TABLE IF NOT EXISTS "clinics" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name" varchar(100) NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS "teams" (
 	"stripe_product_id" text,
 	"plan_name" varchar(50),
 	"subscription_status" varchar(20),
-	CONSTRAINT "teams_stripe_customer_id_unique" UNIQUE("stripe_customer_id"),
-	CONSTRAINT "teams_stripe_subscription_id_unique" UNIQUE("stripe_subscription_id")
+	CONSTRAINT "clinics_stripe_customer_id_unique" UNIQUE("stripe_customer_id"),
+	CONSTRAINT "clinics_stripe_subscription_id_unique" UNIQUE("stripe_subscription_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "users" (
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS "users" (
 );
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "activity_logs" ADD CONSTRAINT "activity_logs_team_id_teams_id_fk" FOREIGN KEY ("team_id") REFERENCES "public"."teams"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "activity_logs" ADD CONSTRAINT "activity_logs_clinic_id_clinics_id_fk" FOREIGN KEY ("clinic_id") REFERENCES "public"."clinics"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -64,7 +64,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "invitations" ADD CONSTRAINT "invitations_team_id_teams_id_fk" FOREIGN KEY ("team_id") REFERENCES "public"."teams"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "invitations" ADD CONSTRAINT "invitations_clinic_id_clinics_id_fk" FOREIGN KEY ("clinic_id") REFERENCES "public"."clinics"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -76,13 +76,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "team_members" ADD CONSTRAINT "team_members_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "clinic_members" ADD CONSTRAINT "clinic_members_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "team_members" ADD CONSTRAINT "team_members_team_id_teams_id_fk" FOREIGN KEY ("team_id") REFERENCES "public"."teams"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "clinic_members" ADD CONSTRAINT "clinic_members_clinic_id_clinics_id_fk" FOREIGN KEY ("clinic_id") REFERENCES "public"."clinics"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

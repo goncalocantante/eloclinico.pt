@@ -1,11 +1,11 @@
-import { desc, and, eq, isNull } from 'drizzle-orm';
-import { db } from './drizzle';
-import { activityLogs, teamMembers, teams, users } from './schema';
-import { cookies } from 'next/headers';
-import { verifyToken } from '@/lib/auth/session';
+import { desc, and, eq, isNull } from "drizzle-orm";
+import { db } from "./drizzle";
+import { activityLogs, clinicMembers, clinics, users } from "./schema";
+import { cookies } from "next/headers";
+import { verifyToken } from "@/lib/auth/session";
 
 export async function getUser() {
-  const sessionCookie = (await cookies()).get('session');
+  const sessionCookie = (await cookies()).get("session");
   if (!sessionCookie || !sessionCookie.value) {
     return null;
   }
@@ -14,7 +14,7 @@ export async function getUser() {
   if (
     !sessionData ||
     !sessionData.user ||
-    typeof sessionData.user.id !== 'number'
+    typeof sessionData.user.id !== "number"
   ) {
     return null;
   }
@@ -36,18 +36,18 @@ export async function getUser() {
   return user[0];
 }
 
-export async function getTeamByStripeCustomerId(customerId: string) {
+export async function getClinicByStripeCustomerId(customerId: string) {
   const result = await db
     .select()
-    .from(teams)
-    .where(eq(teams.stripeCustomerId, customerId))
+    .from(clinics)
+    .where(eq(clinics.stripeCustomerId, customerId))
     .limit(1);
 
   return result.length > 0 ? result[0] : null;
 }
 
-export async function updateTeamSubscription(
-  teamId: number,
+export async function updateClinicSubscription(
+  clinicId: number,
   subscriptionData: {
     stripeSubscriptionId: string | null;
     stripeProductId: string | null;
@@ -56,22 +56,22 @@ export async function updateTeamSubscription(
   }
 ) {
   await db
-    .update(teams)
+    .update(clinics)
     .set({
       ...subscriptionData,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
-    .where(eq(teams.id, teamId));
+    .where(eq(clinics.id, clinicId));
 }
 
-export async function getUserWithTeam(userId: number) {
+export async function getUserWithClinic(userId: number) {
   const result = await db
     .select({
       user: users,
-      teamId: teamMembers.teamId
+      clinicId: clinicMembers.clinicId,
     })
     .from(users)
-    .leftJoin(teamMembers, eq(users.id, teamMembers.userId))
+    .leftJoin(clinicMembers, eq(users.id, clinicMembers.userId))
     .where(eq(users.id, userId))
     .limit(1);
 
@@ -81,7 +81,7 @@ export async function getUserWithTeam(userId: number) {
 export async function getActivityLogs() {
   const user = await getUser();
   if (!user) {
-    throw new Error('User not authenticated');
+    throw new Error("User not authenticated");
   }
 
   return await db
@@ -90,7 +90,7 @@ export async function getActivityLogs() {
       action: activityLogs.action,
       timestamp: activityLogs.timestamp,
       ipAddress: activityLogs.ipAddress,
-      userName: users.name
+      userName: users.name,
     })
     .from(activityLogs)
     .leftJoin(users, eq(activityLogs.userId, users.id))
@@ -99,32 +99,32 @@ export async function getActivityLogs() {
     .limit(10);
 }
 
-export async function getTeamForUser() {
+export async function getClinicForUser() {
   const user = await getUser();
   if (!user) {
     return null;
   }
 
-  const result = await db.query.teamMembers.findFirst({
-    where: eq(teamMembers.userId, user.id),
+  const result = await db.query.clinicMembers.findFirst({
+    where: eq(clinicMembers.userId, user.id),
     with: {
-      team: {
+      clinic: {
         with: {
-          teamMembers: {
+          clinicMembers: {
             with: {
               user: {
                 columns: {
                   id: true,
                   name: true,
-                  email: true
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
-  return result?.team || null;
+  return result?.clinic || null;
 }

@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardFooter
-} from '@/components/ui/card';
-import { customerPortalAction } from '@/lib/payments/actions';
-import { useActionState } from 'react';
-import { TeamDataWithMembers, User } from '@/lib/db/schema';
-import { removeTeamMember, inviteTeamMember } from '@/app/(login)/actions';
-import useSWR from 'swr';
-import { Suspense } from 'react';
-import { Input } from '@/components/ui/input';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Loader2, PlusCircle } from 'lucide-react';
+  CardFooter,
+} from "@/components/ui/card";
+import { customerPortalAction } from "@/lib/payments/actions";
+import { useActionState } from "react";
+import { ClinicDataWithMembers, User } from "@/lib/db/schema";
+import { removeClinicMember, inviteClinicMember } from "@/app/(login)/actions";
+import useSWR from "swr";
+import { Suspense } from "react";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Loader2, PlusCircle } from "lucide-react";
 
 type ActionState = {
   error?: string;
@@ -31,33 +31,36 @@ function SubscriptionSkeleton() {
   return (
     <Card className="mb-8 h-[140px]">
       <CardHeader>
-        <CardTitle>Team Subscription</CardTitle>
+        <CardTitle>Clinic Subscription</CardTitle>
       </CardHeader>
     </Card>
   );
 }
 
 function ManageSubscription() {
-  const { data: teamData } = useSWR<TeamDataWithMembers>('/api/team', fetcher);
+  const { data: clinicData } = useSWR<ClinicDataWithMembers>(
+    "/api/clinic",
+    fetcher
+  );
 
   return (
     <Card className="mb-8">
       <CardHeader>
-        <CardTitle>Team Subscription</CardTitle>
+        <CardTitle>Clinic Subscription</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <div className="mb-4 sm:mb-0">
               <p className="font-medium">
-                Current Plan: {teamData?.planName || 'Free'}
+                Current Plan: {clinicData?.planName || "Free"}
               </p>
               <p className="text-sm text-muted-foreground">
-                {teamData?.subscriptionStatus === 'active'
-                  ? 'Billed monthly'
-                  : teamData?.subscriptionStatus === 'trialing'
-                  ? 'Trial period'
-                  : 'No active subscription'}
+                {clinicData?.subscriptionStatus === "active"
+                  ? "Billed monthly"
+                  : clinicData?.subscriptionStatus === "trialing"
+                  ? "Trial period"
+                  : "No active subscription"}
               </p>
             </div>
             <form action={customerPortalAction}>
@@ -72,11 +75,11 @@ function ManageSubscription() {
   );
 }
 
-function TeamMembersSkeleton() {
+function ClinicMembersSkeleton() {
   return (
     <Card className="mb-8 h-[140px]">
       <CardHeader>
-        <CardTitle>Team Members</CardTitle>
+        <CardTitle>Clinic Members</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="animate-pulse space-y-4 mt-1">
@@ -93,25 +96,28 @@ function TeamMembersSkeleton() {
   );
 }
 
-function TeamMembers() {
-  const { data: teamData } = useSWR<TeamDataWithMembers>('/api/team', fetcher);
+function ClinicMembers() {
+  const { data: clinicData } = useSWR<ClinicDataWithMembers>(
+    "/api/clinic",
+    fetcher
+  );
   const [removeState, removeAction, isRemovePending] = useActionState<
     ActionState,
     FormData
-  >(removeTeamMember, {});
+  >(removeClinicMember, {});
 
-  const getUserDisplayName = (user: Pick<User, 'id' | 'name' | 'email'>) => {
-    return user.name || user.email || 'Unknown User';
+  const getUserDisplayName = (user: Pick<User, "id" | "name" | "email">) => {
+    return user.name || user.email || "Unknown User";
   };
 
-  if (!teamData?.teamMembers?.length) {
+  if (!clinicData?.clinicMembers?.length) {
     return (
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Team Members</CardTitle>
+          <CardTitle>Clinic Members</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">No team members yet.</p>
+          <p className="text-muted-foreground">No clinic members yet.</p>
         </CardContent>
       </Card>
     );
@@ -120,11 +126,11 @@ function TeamMembers() {
   return (
     <Card className="mb-8">
       <CardHeader>
-        <CardTitle>Team Members</CardTitle>
+        <CardTitle>Clinic Members</CardTitle>
       </CardHeader>
       <CardContent>
         <ul className="space-y-4">
-          {teamData.teamMembers.map((member, index) => (
+          {clinicData.clinicMembers.map((member, index) => (
             <li key={member.id} className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <Avatar>
@@ -139,9 +145,9 @@ function TeamMembers() {
                   */}
                   <AvatarFallback>
                     {getUserDisplayName(member.user)
-                      .split(' ')
+                      .split(" ")
                       .map((n) => n[0])
-                      .join('')}
+                      .join("")}
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -162,7 +168,7 @@ function TeamMembers() {
                     size="sm"
                     disabled={isRemovePending}
                   >
-                    {isRemovePending ? 'Removing...' : 'Remove'}
+                    {isRemovePending ? "Removing..." : "Remove"}
                   </Button>
                 </form>
               ) : null}
@@ -177,28 +183,28 @@ function TeamMembers() {
   );
 }
 
-function InviteTeamMemberSkeleton() {
+function InviteClinicMemberSkeleton() {
   return (
     <Card className="h-[260px]">
       <CardHeader>
-        <CardTitle>Invite Team Member</CardTitle>
+        <CardTitle>Invite Clinic Member</CardTitle>
       </CardHeader>
     </Card>
   );
 }
 
-function InviteTeamMember() {
-  const { data: user } = useSWR<User>('/api/user', fetcher);
-  const isOwner = user?.role === 'owner';
+function InviteClinicMember() {
+  const { data: user } = useSWR<User>("/api/user", fetcher);
+  const isOwner = user?.role === "owner";
   const [inviteState, inviteAction, isInvitePending] = useActionState<
     ActionState,
     FormData
-  >(inviteTeamMember, {});
+  >(inviteClinicMember, {});
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Invite Team Member</CardTitle>
+        <CardTitle>Invite Clinic Member</CardTitle>
       </CardHeader>
       <CardContent>
         <form action={inviteAction} className="space-y-4">
@@ -261,7 +267,7 @@ function InviteTeamMember() {
       {!isOwner && (
         <CardFooter>
           <p className="text-sm text-muted-foreground">
-            You must be a team owner to invite new members.
+            You must be a clinic owner to invite new members.
           </p>
         </CardFooter>
       )}
@@ -272,15 +278,15 @@ function InviteTeamMember() {
 export default function SettingsPage() {
   return (
     <section className="flex-1 p-4 lg:p-8">
-      <h1 className="text-lg lg:text-2xl font-medium mb-6">Team Settings</h1>
+      <h1 className="text-lg lg:text-2xl font-medium mb-6">Clinic Settings</h1>
       <Suspense fallback={<SubscriptionSkeleton />}>
         <ManageSubscription />
       </Suspense>
-      <Suspense fallback={<TeamMembersSkeleton />}>
-        <TeamMembers />
+      <Suspense fallback={<ClinicMembersSkeleton />}>
+        <ClinicMembers />
       </Suspense>
-      <Suspense fallback={<InviteTeamMemberSkeleton />}>
-        <InviteTeamMember />
+      <Suspense fallback={<InviteClinicMemberSkeleton />}>
+        <InviteClinicMember />
       </Suspense>
     </section>
   );

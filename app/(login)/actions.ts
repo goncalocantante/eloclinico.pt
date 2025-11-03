@@ -1,77 +1,77 @@
-'use server';
+"use server";
 
-import { z } from 'zod';
-import { and, eq, sql } from 'drizzle-orm';
-import { db } from '@/lib/db/drizzle';
+import { z } from "zod";
+import { and, eq, sql } from "drizzle-orm";
+import { db } from "@/lib/db/drizzle";
 import {
   User,
   users,
-  teams,
-  teamMembers,
+  clinics,
+  clinicMembers,
   activityLogs,
   type NewUser,
-  type NewTeam,
-  type NewTeamMember,
+  type NewClinic,
+  type NewClinicMember,
   type NewActivityLog,
   ActivityType,
-  invitations
-} from '@/lib/db/schema';
-import { comparePasswords, hashPassword, setSession } from '@/lib/auth/session';
-import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
-import { createCheckoutSession } from '@/lib/payments/stripe';
-import { getUser, getUserWithTeam } from '@/lib/db/queries';
+  invitations,
+} from "@/lib/db/schema";
+import { comparePasswords, hashPassword, setSession } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { createCheckoutSession } from "@/lib/payments/stripe";
+import { getUser, getUserWithClinic } from "@/lib/db/queries";
 import {
   validatedAction,
-  validatedActionWithUser
-} from '@/lib/auth/middleware';
+  validatedActionWithUser,
+} from "@/lib/auth/middleware";
 
 async function logActivity(
-  teamId: number | null | undefined,
+  clinicId: number | null | undefined,
   userId: number,
   type: ActivityType,
   ipAddress?: string
 ) {
-  if (teamId === null || teamId === undefined) {
+  if (clinicId === null || clinicId === undefined) {
     return;
   }
   const newActivity: NewActivityLog = {
-    teamId,
+    clinicId,
     userId,
     action: type,
-    ipAddress: ipAddress || ''
+    ipAddress: ipAddress || "",
   };
   await db.insert(activityLogs).values(newActivity);
 }
 
 const signInSchema = z.object({
   email: z.string().email().min(3).max(255),
-  password: z.string().min(8).max(100)
+  password: z.string().min(8).max(100),
 });
 
 export const signIn = validatedAction(signInSchema, async (data, formData) => {
   const { email, password } = data;
 
-  const userWithTeam = await db
+  const userWithClinic = await db
     .select({
       user: users,
-      team: teams
+      clinic: clinics,
     })
     .from(users)
-    .leftJoin(teamMembers, eq(users.id, teamMembers.userId))
-    .leftJoin(teams, eq(teamMembers.teamId, teams.id))
+    .leftJoin(clinicMembers, eq(users.id, clinicMembers.userId))
+    .leftJoin(clinics, eq(clinicMembers.clinicId, clinics.id))
     .where(eq(users.email, email))
     .limit(1);
 
-  if (userWithTeam.length === 0) {
+  if (userWithClinic.length === 0) {
     return {
-      error: 'Invalid email or password. Please try again.',
+      error: "Invalid email or password. Please try again.",
       email,
-      password
+      password,
     };
   }
 
-  const { user: foundUser, team: foundTeam } = userWithTeam[0];
+  const { user: foundUser, clinic: foundClinic } = userWithClinic[0];
 
   const isPasswordValid = await comparePasswords(
     password,
@@ -80,30 +80,30 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 
   if (!isPasswordValid) {
     return {
-      error: 'Invalid email or password. Please try again.',
+      error: "Invalid email or password. Please try again.",
       email,
-      password
+      password,
     };
   }
 
   await Promise.all([
     setSession(foundUser),
-    logActivity(foundTeam?.id, foundUser.id, ActivityType.SIGN_IN)
+    logActivity(foundClinic?.id, foundUser.id, ActivityType.SIGN_IN),
   ]);
 
-  const redirectTo = formData.get('redirect') as string | null;
-  if (redirectTo === 'checkout') {
-    const priceId = formData.get('priceId') as string;
-    return createCheckoutSession({ team: foundTeam, priceId });
+  const redirectTo = formData.get("redirect") as string | null;
+  if (redirectTo === "checkout") {
+    const priceId = formData.get("priceId") as string;
+    return createCheckoutSession({ clinic: foundClinic, priceId });
   }
 
-  redirect('/dashboard');
+  redirect("/dashboard");
 });
 
 const signUpSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  inviteId: z.string().optional()
+  inviteId: z.string().optional(),
 });
 
 export const signUp = validatedAction(signUpSchema, async (data, formData) => {
@@ -117,9 +117,9 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 
   if (existingUser.length > 0) {
     return {
-      error: 'Failed to create user. Please try again.',
+      error: "Failed to create user. Please try again.",
       email,
-      password
+      password,
     };
   }
 
@@ -128,22 +128,22 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   const newUser: NewUser = {
     email,
     passwordHash,
-    role: 'owner' // Default role, will be overridden if there's an invitation
+    role: "owner", // Default role, will be overridden if there's an invitation
   };
 
   const [createdUser] = await db.insert(users).values(newUser).returning();
 
   if (!createdUser) {
     return {
-      error: 'Failed to create user. Please try again.',
+      error: "Failed to create user. Please try again.",
       email,
-      password
+      password,
     };
   }
 
-  let teamId: number;
+  let clinicId: number;
   let userRole: string;
-  let createdTeam: typeof teams.$inferSelect | null = null;
+  let createdClinic: typeof clinics.$inferSelect | null = null;
 
   if (inviteId) {
     // Check if there's a valid invitation
@@ -154,84 +154,88 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
         and(
           eq(invitations.id, parseInt(inviteId)),
           eq(invitations.email, email),
-          eq(invitations.status, 'pending')
+          eq(invitations.status, "pending")
         )
       )
       .limit(1);
 
     if (invitation) {
-      teamId = invitation.teamId;
+      clinicId = invitation.clinicId;
       userRole = invitation.role;
 
       await db
         .update(invitations)
-        .set({ status: 'accepted' })
+        .set({ status: "accepted" })
         .where(eq(invitations.id, invitation.id));
 
-      await logActivity(teamId, createdUser.id, ActivityType.ACCEPT_INVITATION);
+      await logActivity(
+        clinicId,
+        createdUser.id,
+        ActivityType.ACCEPT_INVITATION
+      );
 
-      [createdTeam] = await db
+      [createdClinic] = await db
         .select()
-        .from(teams)
-        .where(eq(teams.id, teamId))
+        .from(clinics)
+        .where(eq(clinics.id, clinicId))
         .limit(1);
     } else {
-      return { error: 'Invalid or expired invitation.', email, password };
+      return { error: "Invalid or expired invitation.", email, password };
     }
   } else {
-    // Create a new team if there's no invitation
-    const newTeam: NewTeam = {
-      name: `${email}'s Team`
+    // Create a new clinic if there's no invitation
+    const newClinic: NewClinic = {
+      name: `${email}'s Clinic`,
     };
 
-    [createdTeam] = await db.insert(teams).values(newTeam).returning();
+    [createdClinic] = await db.insert(clinics).values(newClinic).returning();
 
-    if (!createdTeam) {
+    if (!createdClinic) {
       return {
-        error: 'Failed to create team. Please try again.',
+        error: "Failed to create clinic. Please try again.",
         email,
-        password
+        password,
       };
     }
 
-    teamId = createdTeam.id;
-    userRole = 'owner';
+    clinicId = createdClinic.id;
+    userRole = "owner";
 
-    await logActivity(teamId, createdUser.id, ActivityType.CREATE_TEAM);
+    await logActivity(clinicId, createdUser.id, ActivityType.CREATE_CLINIC);
   }
 
-  const newTeamMember: NewTeamMember = {
+  const newClinicMember: NewClinicMember = {
     userId: createdUser.id,
-    teamId: teamId,
-    role: userRole
+    clinicId: clinicId,
+    role: userRole,
   };
 
   await Promise.all([
-    db.insert(teamMembers).values(newTeamMember),
-    logActivity(teamId, createdUser.id, ActivityType.SIGN_UP),
-    setSession(createdUser)
+    db.insert(clinicMembers).values(newClinicMember),
+    logActivity(clinicId, createdUser.id, ActivityType.SIGN_UP),
+    setSession(createdUser),
   ]);
 
-  const redirectTo = formData.get('redirect') as string | null;
-  if (redirectTo === 'checkout') {
-    const priceId = formData.get('priceId') as string;
-    return createCheckoutSession({ team: createdTeam, priceId });
+  const redirectTo = formData.get("redirect") as string | null;
+  if (redirectTo === "checkout") {
+    const priceId = formData.get("priceId") as string;
+    return createCheckoutSession({ clinic: createdClinic, priceId });
   }
 
-  redirect('/dashboard');
+  redirect("/dashboard");
 });
 
 export async function signOut() {
   const user = (await getUser()) as User;
-  const userWithTeam = await getUserWithTeam(user.id);
-  await logActivity(userWithTeam?.teamId, user.id, ActivityType.SIGN_OUT);
-  (await cookies()).delete('session');
+  const userWithClinic = await getUserWithClinic(user.id);
+  await logActivity(userWithClinic?.clinicId, user.id, ActivityType.SIGN_OUT);
+  (await cookies()).delete("session");
 }
 
 const updatePasswordSchema = z.object({
   currentPassword: z.string().min(8).max(100),
   newPassword: z.string().min(8).max(100),
-  confirmPassword: z.string().min(8).max(100)
+  confirmPassword: z.string().min(8).max(100),
 });
 
 export const updatePassword = validatedActionWithUser(
@@ -249,7 +253,7 @@ export const updatePassword = validatedActionWithUser(
         currentPassword,
         newPassword,
         confirmPassword,
-        error: 'Current password is incorrect.'
+        error: "Current password is incorrect.",
       };
     }
 
@@ -258,7 +262,7 @@ export const updatePassword = validatedActionWithUser(
         currentPassword,
         newPassword,
         confirmPassword,
-        error: 'New password must be different from the current password.'
+        error: "New password must be different from the current password.",
       };
     }
 
@@ -267,29 +271,33 @@ export const updatePassword = validatedActionWithUser(
         currentPassword,
         newPassword,
         confirmPassword,
-        error: 'New password and confirmation password do not match.'
+        error: "New password and confirmation password do not match.",
       };
     }
 
     const newPasswordHash = await hashPassword(newPassword);
-    const userWithTeam = await getUserWithTeam(user.id);
+    const userWithClinic = await getUserWithClinic(user.id);
 
     await Promise.all([
       db
         .update(users)
         .set({ passwordHash: newPasswordHash })
         .where(eq(users.id, user.id)),
-      logActivity(userWithTeam?.teamId, user.id, ActivityType.UPDATE_PASSWORD)
+      logActivity(
+        userWithClinic?.clinicId,
+        user.id,
+        ActivityType.UPDATE_PASSWORD
+      ),
     ]);
 
     return {
-      success: 'Password updated successfully.'
+      success: "Password updated successfully.",
     };
   }
 );
 
 const deleteAccountSchema = z.object({
-  password: z.string().min(8).max(100)
+  password: z.string().min(8).max(100),
 });
 
 export const deleteAccount = validatedActionWithUser(
@@ -301,14 +309,14 @@ export const deleteAccount = validatedActionWithUser(
     if (!isPasswordValid) {
       return {
         password,
-        error: 'Incorrect password. Account deletion failed.'
+        error: "Incorrect password. Account deletion failed.",
       };
     }
 
-    const userWithTeam = await getUserWithTeam(user.id);
+    const userWithClinic = await getUserWithClinic(user.id);
 
     await logActivity(
-      userWithTeam?.teamId,
+      userWithClinic?.clinicId,
       user.id,
       ActivityType.DELETE_ACCOUNT
     );
@@ -318,105 +326,112 @@ export const deleteAccount = validatedActionWithUser(
       .update(users)
       .set({
         deletedAt: sql`CURRENT_TIMESTAMP`,
-        email: sql`CONCAT(email, '-', id, '-deleted')` // Ensure email uniqueness
+        email: sql`CONCAT(email, '-', id, '-deleted')`, // Ensure email uniqueness
       })
       .where(eq(users.id, user.id));
 
-    if (userWithTeam?.teamId) {
+    if (userWithClinic?.clinicId) {
       await db
-        .delete(teamMembers)
+        .delete(clinicMembers)
         .where(
           and(
-            eq(teamMembers.userId, user.id),
-            eq(teamMembers.teamId, userWithTeam.teamId)
+            eq(clinicMembers.userId, user.id),
+            eq(clinicMembers.clinicId, userWithClinic.clinicId)
           )
         );
     }
 
-    (await cookies()).delete('session');
-    redirect('/sign-in');
+    (await cookies()).delete("session");
+    redirect("/sign-in");
   }
 );
 
 const updateAccountSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100),
-  email: z.string().email('Invalid email address')
+  name: z.string().min(1, "Name is required").max(100),
+  email: z.string().email("Invalid email address"),
 });
 
 export const updateAccount = validatedActionWithUser(
   updateAccountSchema,
   async (data, _, user) => {
     const { name, email } = data;
-    const userWithTeam = await getUserWithTeam(user.id);
+    const userWithClinic = await getUserWithClinic(user.id);
 
     await Promise.all([
       db.update(users).set({ name, email }).where(eq(users.id, user.id)),
-      logActivity(userWithTeam?.teamId, user.id, ActivityType.UPDATE_ACCOUNT)
+      logActivity(
+        userWithClinic?.clinicId,
+        user.id,
+        ActivityType.UPDATE_ACCOUNT
+      ),
     ]);
 
-    return { name, success: 'Account updated successfully.' };
+    return { name, success: "Account updated successfully." };
   }
 );
 
-const removeTeamMemberSchema = z.object({
-  memberId: z.number()
+const removeClinicMemberSchema = z.object({
+  memberId: z.number(),
 });
 
-export const removeTeamMember = validatedActionWithUser(
-  removeTeamMemberSchema,
+export const removeClinicMember = validatedActionWithUser(
+  removeClinicMemberSchema,
   async (data, _, user) => {
     const { memberId } = data;
-    const userWithTeam = await getUserWithTeam(user.id);
+    const userWithClinic = await getUserWithClinic(user.id);
 
-    if (!userWithTeam?.teamId) {
-      return { error: 'User is not part of a team' };
+    if (!userWithClinic?.clinicId) {
+      return { error: "User is not part of a clinic" };
     }
 
     await db
-      .delete(teamMembers)
+      .delete(clinicMembers)
       .where(
         and(
-          eq(teamMembers.id, memberId),
-          eq(teamMembers.teamId, userWithTeam.teamId)
+          eq(clinicMembers.id, memberId),
+          eq(clinicMembers.clinicId, userWithClinic.clinicId)
         )
       );
 
     await logActivity(
-      userWithTeam.teamId,
+      userWithClinic.clinicId,
       user.id,
-      ActivityType.REMOVE_TEAM_MEMBER
+      ActivityType.REMOVE_CLINIC_MEMBER
     );
 
-    return { success: 'Team member removed successfully' };
+    return { success: "Clinic member removed successfully" };
   }
 );
 
-const inviteTeamMemberSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  role: z.enum(['member', 'owner'])
+const inviteClinicMemberSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  role: z.enum(["member", "owner"]),
 });
 
-export const inviteTeamMember = validatedActionWithUser(
-  inviteTeamMemberSchema,
+export const inviteClinicMember = validatedActionWithUser(
+  inviteClinicMemberSchema,
   async (data, _, user) => {
     const { email, role } = data;
-    const userWithTeam = await getUserWithTeam(user.id);
+    const userWithClinic = await getUserWithClinic(user.id);
 
-    if (!userWithTeam?.teamId) {
-      return { error: 'User is not part of a team' };
+    if (!userWithClinic?.clinicId) {
+      return { error: "User is not part of a clinic" };
     }
 
     const existingMember = await db
       .select()
       .from(users)
-      .leftJoin(teamMembers, eq(users.id, teamMembers.userId))
+      .leftJoin(clinicMembers, eq(users.id, clinicMembers.userId))
       .where(
-        and(eq(users.email, email), eq(teamMembers.teamId, userWithTeam.teamId))
+        and(
+          eq(users.email, email),
+          eq(clinicMembers.clinicId, userWithClinic.clinicId)
+        )
       )
       .limit(1);
 
     if (existingMember.length > 0) {
-      return { error: 'User is already a member of this team' };
+      return { error: "User is already a member of this clinic" };
     }
 
     // Check if there's an existing invitation
@@ -426,34 +441,34 @@ export const inviteTeamMember = validatedActionWithUser(
       .where(
         and(
           eq(invitations.email, email),
-          eq(invitations.teamId, userWithTeam.teamId),
-          eq(invitations.status, 'pending')
+          eq(invitations.clinicId, userWithClinic.clinicId),
+          eq(invitations.status, "pending")
         )
       )
       .limit(1);
 
     if (existingInvitation.length > 0) {
-      return { error: 'An invitation has already been sent to this email' };
+      return { error: "An invitation has already been sent to this email" };
     }
 
     // Create a new invitation
     await db.insert(invitations).values({
-      teamId: userWithTeam.teamId,
+      clinicId: userWithClinic.clinicId,
       email,
       role,
       invitedBy: user.id,
-      status: 'pending'
+      status: "pending",
     });
 
     await logActivity(
-      userWithTeam.teamId,
+      userWithClinic.clinicId,
       user.id,
-      ActivityType.INVITE_TEAM_MEMBER
+      ActivityType.INVITE_CLINIC_MEMBER
     );
 
     // TODO: Send invitation email and include ?inviteId={id} to sign-up URL
-    // await sendInvitationEmail(email, userWithTeam.team.name, role)
+    // await sendInvitationEmail(email, userWithClinic.clinic.name, role)
 
-    return { success: 'Invitation sent successfully' };
+    return { success: "Invitation sent successfully" };
   }
 );

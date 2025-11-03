@@ -14,8 +14,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "team_id": {
-          "name": "team_id",
+        "clinic_id": {
+          "name": "clinic_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -48,12 +48,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "activity_logs_team_id_teams_id_fk": {
-          "name": "activity_logs_team_id_teams_id_fk",
+        "activity_logs_clinic_id_clinics_id_fk": {
+          "name": "activity_logs_clinic_id_clinics_id_fk",
           "tableFrom": "activity_logs",
-          "tableTo": "teams",
+          "tableTo": "clinics",
           "columnsFrom": [
-            "team_id"
+            "clinic_id"
           ],
           "columnsTo": [
             "id"
@@ -88,8 +88,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "team_id": {
-          "name": "team_id",
+        "clinic_id": {
+          "name": "clinic_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -129,12 +129,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "invitations_team_id_teams_id_fk": {
-          "name": "invitations_team_id_teams_id_fk",
+        "invitations_clinic_id_clinics_id_fk": {
+          "name": "invitations_clinic_id_clinics_id_fk",
           "tableFrom": "invitations",
-          "tableTo": "teams",
+          "tableTo": "clinics",
           "columnsFrom": [
-            "team_id"
+            "clinic_id"
           ],
           "columnsTo": [
             "id"
@@ -159,8 +159,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.team_members": {
-      "name": "team_members",
+    "public.clinic_members": {
+      "name": "clinic_members",
       "schema": "",
       "columns": {
         "id": {
@@ -175,8 +175,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "team_id": {
-          "name": "team_id",
+        "clinic_id": {
+          "name": "clinic_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -197,9 +197,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "team_members_user_id_users_id_fk": {
-          "name": "team_members_user_id_users_id_fk",
-          "tableFrom": "team_members",
+        "clinic_members_user_id_users_id_fk": {
+          "name": "clinic_members_user_id_users_id_fk",
+          "tableFrom": "clinic_members",
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
@@ -210,12 +210,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "team_members_team_id_teams_id_fk": {
-          "name": "team_members_team_id_teams_id_fk",
-          "tableFrom": "team_members",
-          "tableTo": "teams",
+        "clinic_members_clinic_id_clinics_id_fk": {
+          "name": "clinic_members_clinic_id_clinics_id_fk",
+          "tableFrom": "clinic_members",
+          "tableTo": "clinics",
           "columnsFrom": [
-            "team_id"
+            "clinic_id"
           ],
           "columnsTo": [
             "id"
@@ -227,8 +227,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.teams": {
-      "name": "teams",
+    "public.clinics": {
+      "name": "clinics",
       "schema": "",
       "columns": {
         "id": {
@@ -292,15 +292,15 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "teams_stripe_customer_id_unique": {
-          "name": "teams_stripe_customer_id_unique",
+        "clinics_stripe_customer_id_unique": {
+          "name": "clinics_stripe_customer_id_unique",
           "nullsNotDistinct": false,
           "columns": [
             "stripe_customer_id"
           ]
         },
-        "teams_stripe_subscription_id_unique": {
-          "name": "teams_stripe_subscription_id_unique",
+        "clinics_stripe_subscription_id_unique": {
+          "name": "clinics_stripe_subscription_id_unique",
           "nullsNotDistinct": false,
           "columns": [
             "stripe_subscription_id"

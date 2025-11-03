@@ -1,7 +1,7 @@
-import { z } from 'zod';
-import { TeamDataWithMembers, User } from '@/lib/db/schema';
-import { getTeamForUser, getUser } from '@/lib/db/queries';
-import { redirect } from 'next/navigation';
+import { z } from "zod";
+import { ClinicDataWithMembers, User } from "@/lib/db/schema";
+import { getClinicForUser, getUser } from "@/lib/db/queries";
+import { redirect } from "next/navigation";
 
 export type ActionState = {
   error?: string;
@@ -41,7 +41,7 @@ export function validatedActionWithUser<S extends z.ZodType<any, any>, T>(
   return async (prevState: ActionState, formData: FormData) => {
     const user = await getUser();
     if (!user) {
-      throw new Error('User is not authenticated');
+      throw new Error("User is not authenticated");
     }
 
     const result = schema.safeParse(Object.fromEntries(formData));
@@ -53,23 +53,23 @@ export function validatedActionWithUser<S extends z.ZodType<any, any>, T>(
   };
 }
 
-type ActionWithTeamFunction<T> = (
+type ActionWithClinicFunction<T> = (
   formData: FormData,
-  team: TeamDataWithMembers
+  clinic: ClinicDataWithMembers
 ) => Promise<T>;
 
-export function withTeam<T>(action: ActionWithTeamFunction<T>) {
+export function withClinic<T>(action: ActionWithClinicFunction<T>) {
   return async (formData: FormData): Promise<T> => {
     const user = await getUser();
     if (!user) {
-      redirect('/sign-in');
+      redirect("/sign-in");
     }
 
-    const team = await getTeamForUser();
-    if (!team) {
-      throw new Error('Team not found');
+    const clinic = await getClinicForUser();
+    if (!clinic) {
+      throw new Error("Clinic not found");
     }
 
-    return action(formData, team);
+    return action(formData, clinic);
   };
 }
