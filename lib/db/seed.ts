@@ -1,7 +1,9 @@
 import { stripe } from "../payments/stripe";
 import { db } from "./drizzle";
-import { users, clinics, clinicMembers } from "./schema";
+import { users, clinics, clinicMembers, patients, Patient } from "./schema";
 import { hashPassword } from "@/lib/auth/session";
+import { faker } from "@faker-js/faker";
+import { unique } from "@dpaskhin/unique";
 
 async function createStripeProducts() {
   console.log("Creating Stripe products and prices...");
@@ -69,6 +71,23 @@ async function seed() {
     userId: user.id,
     role: "owner",
   });
+
+  // Create 100 clients using realistic mock data from faker
+  const patientsMock: Patient[] = Array.from({ length: 100 }, () => ({
+    id: faker.string.uuid(),
+    name: faker.person.fullName(),
+    email: unique(faker.internet.email()),
+    phone: faker.phone.number({ style: "international" }),
+    position: faker.person.jobTitle(),
+    address: faker.location.streetAddress(),
+    //  profileImage: faker.image.avatar(),
+    information: faker.lorem.paragraphs(),
+    dateOfBirth: faker.date.past({ years: 10 }),
+  }));
+
+  await db.insert(patients).values(patientsMock).returning();
+
+  console.log("Initial patients created.");
 
   await createStripeProducts();
 }

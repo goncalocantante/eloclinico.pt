@@ -5,8 +5,9 @@ import { getUserWithContext, getClinicForUser } from "@/lib/db/queries/queries";
 import { SWRConfig } from "swr";
 
 export const metadata: Metadata = {
-  title: "Next.js SaaS Starter",
-  description: "Get started quickly with Next.js, Postgres, and Stripe.",
+  title: "Psychologist App",
+  description:
+    "Saas platform for psychologists to manage their practice with ease!",
 };
 
 export const viewport: Viewport = {
