@@ -5,6 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Users, Settings, Shield, Activity, Menu } from "lucide-react";
+import { UserContext } from "@/lib/db/schema";
+import useSWR from "swr";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function DashboardLayout({
   children,
@@ -14,8 +18,21 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  const { data: user } = useSWR<UserContext>("/api/user", fetcher);
+  const isPsychologist =
+    user?.effectiveRole === "owner" || user?.role === "psychologist";
+
   const navItems = [
     { href: "/dashboard", icon: Users, label: "Clinic" },
+    ...(isPsychologist
+      ? [
+          {
+            href: "/dashboard/patients",
+            icon: Users,
+            label: "Patients",
+          },
+        ]
+      : []),
     { href: "/dashboard/general", icon: Settings, label: "General" },
     { href: "/dashboard/activity", icon: Activity, label: "Activity" },
     { href: "/dashboard/security", icon: Shield, label: "Security" },

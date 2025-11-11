@@ -1,6 +1,13 @@
 import { desc, and, eq, isNull } from "drizzle-orm";
-import { db } from "./drizzle";
-import { activityLogs, clinicMembers, clinics, users } from "./schema";
+import { db } from "../drizzle";
+import {
+  activityLogs,
+  clinicMembers,
+  clinics,
+  users,
+  UserContext,
+  Roles,
+} from "../schema";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth/session";
 
@@ -34,6 +41,33 @@ export async function getUser() {
   }
 
   return user[0];
+}
+
+export async function getUserWithContext(): Promise<UserContext | null> {
+  const user = await getUser();
+  if (!user) {
+    return null;
+  }
+
+  const teamMembers = await db
+    .select()
+    .from(clinicMembers)
+    .where(eq(clinicMembers.userId, user.id))
+    .limit(1);
+
+  let effectiveRole = "owner" as Roles; // default to be overriden
+
+  if (teamMembers[0]) {
+    effectiveRole = teamMembers[0].role as Roles;
+  } else {
+    // todo - implement the correct logic when "patient" role is introduced
+    effectiveRole = "patient";
+  }
+  return {
+    ...user,
+    clinicId: teamMembers[0]?.clinicId ?? null,
+    effectiveRole,
+  };
 }
 
 export async function getClinicByStripeCustomerId(customerId: string) {
@@ -80,6 +114,7 @@ export async function getUserWithClinic(userId: number) {
 
 export async function getActivityLogs() {
   const user = await getUser();
+
   if (!user) {
     throw new Error("User not authenticated");
   }
@@ -102,7 +137,7 @@ export async function getActivityLogs() {
 export async function getClinicForUser() {
   const user = await getUser();
   if (!user) {
-    return null;
+    throw new Error("User not authenticated");
   }
 
   const result = await db.query.clinicMembers.findFirst({

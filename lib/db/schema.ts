@@ -5,6 +5,8 @@ import {
   text,
   timestamp,
   integer,
+  date,
+  uuid,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -41,6 +43,17 @@ export const clinicMembers = pgTable("clinic_members", {
     .references(() => clinics.id),
   role: varchar("role", { length: 50 }).notNull(),
   joinedAt: timestamp("joined_at").notNull().defaultNow(),
+});
+
+export const patients = pgTable("patients", {
+  id: uuid("id").primaryKey(),
+  name: varchar("name", { length: 100 }),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  phone: varchar("phone", { length: 16 }),
+  address: varchar("address", { length: 100 }),
+  dateOfBirth: date({ mode: "date" }),
+  information: text("information"),
+  // profileImage: varchar("profileImage", { length: 100 }),
 });
 
 export const activityLogs = pgTable("activity_logs", {
@@ -118,6 +131,7 @@ export type Clinic = typeof clinics.$inferSelect;
 export type NewClinic = typeof clinics.$inferInsert;
 export type ClinicMember = typeof clinicMembers.$inferSelect;
 export type NewClinicMember = typeof clinicMembers.$inferInsert;
+export type Patient = typeof patients.$inferSelect;
 export type ActivityLog = typeof activityLogs.$inferSelect;
 export type NewActivityLog = typeof activityLogs.$inferInsert;
 export type Invitation = typeof invitations.$inferSelect;
@@ -126,6 +140,11 @@ export type ClinicDataWithMembers = Clinic & {
   clinicMembers: (ClinicMember & {
     user: Pick<User, "id" | "name" | "email">;
   })[];
+};
+export type Roles = "owner" | "psychologist" | "patient";
+export type UserContext = User & {
+  clinicId: number | null;
+  effectiveRole: Roles;
 };
 
 export enum ActivityType {

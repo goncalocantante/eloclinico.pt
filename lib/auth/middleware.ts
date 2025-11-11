@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ClinicDataWithMembers, User } from "@/lib/db/schema";
-import { getClinicForUser, getUser } from "@/lib/db/queries";
+import { getClinicForUser, getUser } from "@/lib/db/queries/queries";
 import { redirect } from "next/navigation";
 
 export type ActionState = {

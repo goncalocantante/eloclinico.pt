@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { customerPortalAction } from "@/lib/payments/actions";
 import { useActionState } from "react";
-import { ClinicDataWithMembers, User } from "@/lib/db/schema";
+import { ClinicDataWithMembers, UserContext } from "@/lib/db/schema";
 import { removeClinicMember, inviteClinicMember } from "@/app/(login)/actions";
 import useSWR from "swr";
 import { Suspense } from "react";
@@ -194,7 +194,7 @@ function InviteClinicMemberSkeleton() {
 }
 
 function InviteClinicMember() {
-  const { data: user } = useSWR<User>("/api/user", fetcher);
+  const { data: user } = useSWR<UserContext>("/api/user", fetcher);
   const isOwner = user?.role === "owner";
   const [inviteState, inviteAction, isInvitePending] = useActionState<
     ActionState,

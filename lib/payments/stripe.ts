@@ -5,7 +5,7 @@ import {
   getClinicByStripeCustomerId,
   getUser,
   updateClinicSubscription,
-} from "@/lib/db/queries";
+} from "@/lib/db/queries/queries";
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-04-30.basil",

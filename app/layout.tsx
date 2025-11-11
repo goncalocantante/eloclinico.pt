@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
-import { getUser, getClinicForUser, getUserWithClinic } from "@/lib/db/queries";
+import { getUserWithContext, getClinicForUser } from "@/lib/db/queries/queries";
 import { SWRConfig } from "swr";
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default function RootLayout({
             fallback: {
               // We do NOT await here
               // Only components that read this data will suspend
-              "/api/user": getUser(),
+              "/api/user": getUserWithContext(),
               "/api/clinic": getClinicForUser(),
             },
           }}
