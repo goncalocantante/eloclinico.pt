@@ -1,5 +1,6 @@
 "use server";
 
+import { auth } from "@/lib/auth";
 import { z } from "zod";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/drizzle";
@@ -16,28 +17,31 @@ import {
   ActivityType,
   invitations,
 } from "@/lib/db/schema";
-import { comparePasswords, hashPassword, setSession } from "@/lib/auth/session";
+import { comparePasswords } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { createCheckoutSession } from "@/lib/payments/stripe";
 import { getUser, getUserWithClinic } from "@/lib/db/queries/queries";
 import {
   validatedAction,
   validatedActionWithUser,
 } from "@/lib/auth/middleware";
+import { changePasswordErrorMap } from "@/lib/auth/error";
 
 async function logActivity(
   clinicId: number | null | undefined,
-  userId: number,
+  userId: string | number,
   type: ActivityType,
   ipAddress?: string
 ) {
   if (clinicId === null || clinicId === undefined) {
     return;
   }
+  const normalizedUserId =
+    typeof userId === "number" ? userId.toString() : userId;
   const newActivity: NewActivityLog = {
     clinicId,
-    userId,
+    userId: normalizedUserId,
     action: type,
     ipAddress: ipAddress || "",
   };
@@ -51,6 +55,17 @@ const signInSchema = z.object({
 
 export const signIn = validatedAction(signInSchema, async (data, formData) => {
   const { email, password } = data;
+
+  await auth.api.signInEmail({
+    body: {
+      email,
+      password,
+      rememberMe: true,
+      // callbackURL: "https://example.com/callback",
+    },
+    // This endpoint requires session cookies.
+    headers: await headers(),
+  });
 
   const userWithClinic = await db
     .select({
@@ -73,73 +88,36 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 
   const { user: foundUser, clinic: foundClinic } = userWithClinic[0];
 
-  const isPasswordValid = await comparePasswords(
-    password,
-    foundUser.passwordHash
-  );
-
-  if (!isPasswordValid) {
-    return {
-      error: "Invalid email or password. Please try again.",
-      email,
-      password,
-    };
-  }
-
-  await Promise.all([
-    setSession(foundUser),
-    logActivity(foundClinic?.id, foundUser.id, ActivityType.SIGN_IN),
-  ]);
+  await logActivity(foundClinic?.id, foundUser.id, ActivityType.SIGN_IN);
 
   const redirectTo = formData.get("redirect") as string | null;
   if (redirectTo === "checkout") {
     const priceId = formData.get("priceId") as string;
     return createCheckoutSession({ clinic: foundClinic, priceId });
   }
-
   redirect("/dashboard");
 });
 
 const signUpSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-  inviteId: z.string().optional(),
+  name: z.string().min(1, "Name is required").max(100).optional(), // required
+  email: z.string().email().min(3).max(255), // required
+  password: z.string().min(8).max(100), // required
+  inviteId: z.string().optional(), // optional
+  image: z.string().url().optional(), // optional
+  callbackURL: z.string().url().optional(), // optional
 });
 
 export const signUp = validatedAction(signUpSchema, async (data, formData) => {
-  const { email, password, inviteId } = data;
+  const { name, email, password, inviteId, image } = data;
 
-  const existingUser = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
-
-  if (existingUser.length > 0) {
-    return {
-      error: "Failed to create user. Please try again.",
+  const { user: createdUser } = await auth.api.signUpEmail({
+    body: {
+      name: name || "",
       email,
       password,
-    };
-  }
-
-  const passwordHash = await hashPassword(password);
-
-  const newUser: NewUser = {
-    email,
-    passwordHash,
-    role: "owner", // Default role, will be overridden if there's an invitation
-  };
-
-  const [createdUser] = await db.insert(users).values(newUser).returning();
-
-  if (!createdUser) {
-    return {
-      error: "Failed to create user. Please try again.",
-      email,
-      password,
-    };
-  }
+      image,
+    },
+  });
 
   let clinicId: number;
   let userRole: string;
@@ -185,7 +163,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   } else {
     // Create a new clinic if there's no invitation
     const newClinic: NewClinic = {
-      name: `${email}'s Clinic`,
+      name: name ? `${name}'s Clinic` : `${email}'s Clinic`,
     };
 
     [createdClinic] = await db.insert(clinics).values(newClinic).returning();
@@ -206,14 +184,13 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 
   const newClinicMember: NewClinicMember = {
     userId: createdUser.id,
-    clinicId: clinicId,
+    clinicId,
     role: userRole,
   };
 
   await Promise.all([
     db.insert(clinicMembers).values(newClinicMember),
     logActivity(clinicId, createdUser.id, ActivityType.SIGN_UP),
-    setSession(createdUser),
   ]);
 
   const redirectTo = formData.get("redirect") as string | null;
@@ -229,7 +206,7 @@ export async function signOut() {
   const user = (await getUser()) as User;
   const userWithClinic = await getUserWithClinic(user.id);
   await logActivity(userWithClinic?.clinicId, user.id, ActivityType.SIGN_OUT);
-  (await cookies()).delete("session");
+  await auth.api.signOut({ headers: await headers() });
 }
 
 const updatePasswordSchema = z.object({
@@ -243,20 +220,6 @@ export const updatePassword = validatedActionWithUser(
   async (data, _, user) => {
     const { currentPassword, newPassword, confirmPassword } = data;
 
-    const isPasswordValid = await comparePasswords(
-      currentPassword,
-      user.passwordHash
-    );
-
-    if (!isPasswordValid) {
-      return {
-        currentPassword,
-        newPassword,
-        confirmPassword,
-        error: "Current password is incorrect.",
-      };
-    }
-
     if (currentPassword === newPassword) {
       return {
         currentPassword,
@@ -265,7 +228,6 @@ export const updatePassword = validatedActionWithUser(
         error: "New password must be different from the current password.",
       };
     }
-
     if (confirmPassword !== newPassword) {
       return {
         currentPassword,
@@ -275,24 +237,35 @@ export const updatePassword = validatedActionWithUser(
       };
     }
 
-    const newPasswordHash = await hashPassword(newPassword);
-    const userWithClinic = await getUserWithClinic(user.id);
+    try {
+      const res = await auth.api.changePassword({
+        body: {
+          newPassword,
+          currentPassword,
+          revokeOtherSessions: true,
+        },
+        // This endpoint requires session cookies.
+        headers: await headers(),
+      });
 
-    await Promise.all([
-      db
-        .update(users)
-        .set({ passwordHash: newPasswordHash })
-        .where(eq(users.id, user.id)),
+      const userWithClinic = await getUserWithClinic(user.id);
       logActivity(
         userWithClinic?.clinicId,
         user.id,
         ActivityType.UPDATE_PASSWORD
-      ),
-    ]);
+      );
 
-    return {
-      success: "Password updated successfully.",
-    };
+      return {
+        success: "Password updated successfully.",
+      };
+    } catch (error: any) {
+      const code = error?.body?.code ?? error?.body?.message;
+      const message =
+        code && changePasswordErrorMap[code]
+          ? changePasswordErrorMap[code]
+          : "Something went wrong while updating your password. Please try again.";
+      return { currentPassword, newPassword, confirmPassword, error: message };
+    }
   }
 );
 

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { CircleIcon, Loader2 } from "lucide-react";
 import { signIn, signUp } from "./actions";
 import { ActionState } from "@/lib/auth/middleware";
+import { GoogleButton } from "@/components/ui/google-button";
 
 export function Login({ mode = "signin" }: { mode?: "signin" | "signup" }) {
   const searchParams = useSearchParams();
@@ -108,7 +109,7 @@ export function Login({ mode = "signin" }: { mode?: "signin" | "signup" }) {
             </Button>
           </div>
         </form>
-
+        <GoogleButton />
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">

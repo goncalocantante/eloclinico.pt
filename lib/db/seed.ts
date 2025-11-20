@@ -1,6 +1,13 @@
 import { stripe } from "../payments/stripe";
 import { db } from "./drizzle";
-import { users, clinics, clinicMembers, patients, Patient } from "./schema";
+import {
+  users,
+  clinics,
+  clinicMembers,
+  patients,
+  Patient,
+  accounts,
+} from "./schema";
 import { hashPassword } from "@/lib/auth/session";
 import { faker } from "@faker-js/faker";
 import { unique } from "@dpaskhin/unique";
@@ -41,37 +48,7 @@ async function createStripeProducts() {
   console.log("Stripe products and prices created successfully.");
 }
 
-async function seed() {
-  const email = "test@test.com";
-  const password = "admin123";
-  const passwordHash = await hashPassword(password);
-
-  const [user] = await db
-    .insert(users)
-    .values([
-      {
-        email: email,
-        passwordHash: passwordHash,
-        role: "owner",
-      },
-    ])
-    .returning();
-
-  console.log("Initial user created.");
-
-  const [clinic] = await db
-    .insert(clinics)
-    .values({
-      name: "Test Clinic",
-    })
-    .returning();
-
-  await db.insert(clinicMembers).values({
-    clinicId: clinic.id,
-    userId: user.id,
-    role: "owner",
-  });
-
+async function createInitialPatients() {
   // Create 100 clients using realistic mock data from faker
   const patientsMock: Patient[] = Array.from({ length: 100 }, () => ({
     id: faker.string.uuid(),
@@ -88,6 +65,55 @@ async function seed() {
   await db.insert(patients).values(patientsMock).returning();
 
   console.log("Initial patients created.");
+}
+
+async function seed() {
+  const email = "test@test.com";
+  const password = "admin123";
+  const passwordHash = await hashPassword(password);
+  const userId = crypto.randomUUID();
+
+  await db.transaction(async (tx: any) => {
+    console.log("AQUI");
+
+    const [user] = await tx
+      .insert(users)
+      .values({
+        id: userId,
+        email,
+        name: "Test Owner",
+        role: "owner",
+      })
+      .returning();
+
+    console.log("ALI:", user);
+    console.log("userId:", userId);
+
+    await tx.insert(accounts).values({
+      id: crypto.randomUUID(),
+      userId,
+      providerId: "email",
+      accountId: email,
+      password: passwordHash,
+    });
+  });
+
+  console.log("Initial user created.");
+
+  const [clinic] = await db
+    .insert(clinics)
+    .values({
+      name: "Test Clinic",
+    })
+    .returning();
+
+  await db.insert(clinicMembers).values({
+    clinicId: clinic.id,
+    userId: userId,
+    role: "owner",
+  });
+
+  await createInitialPatients();
 
   await createStripeProducts();
 }

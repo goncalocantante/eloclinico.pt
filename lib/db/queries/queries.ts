@@ -1,4 +1,4 @@
-import { desc, and, eq, isNull } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "../drizzle";
 import {
   activityLogs,
@@ -8,39 +8,19 @@ import {
   UserContext,
   Roles,
 } from "../schema";
-import { cookies } from "next/headers";
-import { verifyToken } from "@/lib/auth/session";
+import { auth } from "@/lib/auth"; // path to your Better Auth server instance
+import { headers } from "next/headers";
 
 export async function getUser() {
-  const sessionCookie = (await cookies()).get("session");
-  if (!sessionCookie || !sessionCookie.value) {
-    return null;
-  }
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  const sessionData = await verifyToken(sessionCookie.value);
-  if (
-    !sessionData ||
-    !sessionData.user ||
-    typeof sessionData.user.id !== "number"
-  ) {
-    return null;
-  }
+  if (!session || session.user.deletedAt) return null;
+  // TODO - check for verified email
+  // if (!session || !session.user.emailVerified ) return null;
 
-  if (new Date(sessionData.expires) < new Date()) {
-    return null;
-  }
-
-  const user = await db
-    .select()
-    .from(users)
-    .where(and(eq(users.id, sessionData.user.id), isNull(users.deletedAt)))
-    .limit(1);
-
-  if (user.length === 0) {
-    return null;
-  }
-
-  return user[0];
+  return session.user;
 }
 
 export async function getUserWithContext(): Promise<UserContext | null> {
@@ -98,7 +78,7 @@ export async function updateClinicSubscription(
     .where(eq(clinics.id, clinicId));
 }
 
-export async function getUserWithClinic(userId: number) {
+export async function getUserWithClinic(userId: string) {
   const result = await db
     .select({
       user: users,

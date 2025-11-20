@@ -7,18 +7,70 @@ import {
   integer,
   date,
   uuid,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 100 }),
-  email: varchar("email", { length: 255 }).notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
-  role: varchar("role", { length: 20 }).notNull().default("member"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  role: varchar("role", { length: 20 }).notNull().default("owner"),
+  email: text("email").notNull().unique(),
+  emailVerified: boolean("email_verified").default(false).notNull(),
+  image: text("image"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
   deletedAt: timestamp("deleted_at"),
+});
+
+export const sessions = pgTable("sessions", {
+  id: text("id").primaryKey(),
+  expiresAt: timestamp("expires_at").notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+});
+
+export const accounts = pgTable("accounts", {
+  id: text("id").primaryKey(),
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const verifications = pgTable("verifications", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
 });
 
 export const clinics = pgTable("clinics", {
@@ -35,7 +87,7 @@ export const clinics = pgTable("clinics", {
 
 export const clinicMembers = pgTable("clinic_members", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id")
+  userId: text("user_id")
     .notNull()
     .references(() => users.id),
   clinicId: integer("clinic_id")
@@ -61,7 +113,7 @@ export const activityLogs = pgTable("activity_logs", {
   clinicId: integer("clinic_id")
     .notNull()
     .references(() => clinics.id),
-  userId: integer("user_id").references(() => users.id),
+  userId: text("user_id").references(() => users.id),
   action: text("action").notNull(),
   timestamp: timestamp("timestamp").notNull().defaultNow(),
   ipAddress: varchar("ip_address", { length: 45 }),
@@ -74,7 +126,7 @@ export const invitations = pgTable("invitations", {
     .references(() => clinics.id),
   email: varchar("email", { length: 255 }).notNull(),
   role: varchar("role", { length: 50 }).notNull(),
-  invitedBy: integer("invited_by")
+  invitedBy: text("invited_by")
     .notNull()
     .references(() => users.id),
   invitedAt: timestamp("invited_at").notNull().defaultNow(),
