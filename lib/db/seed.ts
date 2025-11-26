@@ -74,8 +74,6 @@ async function seed() {
   const userId = crypto.randomUUID();
 
   await db.transaction(async (tx: any) => {
-    console.log("AQUI");
-
     const [user] = await tx
       .insert(users)
       .values({
@@ -85,9 +83,6 @@ async function seed() {
         role: "owner",
       })
       .returning();
-
-    console.log("ALI:", user);
-    console.log("userId:", userId);
 
     await tx.insert(accounts).values({
       id: crypto.randomUUID(),

@@ -8,11 +8,8 @@ import {
   date,
   uuid,
   boolean,
-  index,
-  pgEnum,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { DAYS_OF_WEEK_IN_ORDER } from "@/constants";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -64,17 +61,6 @@ export const accounts = pgTable("accounts", {
     .notNull(),
 });
 
-export const patients = pgTable("patients", {
-  id: uuid("id").primaryKey(),
-  name: varchar("name", { length: 100 }),
-  email: varchar("email", { length: 255 }).notNull().unique(),
-  phone: varchar("phone", { length: 16 }),
-  address: varchar("address", { length: 100 }),
-  dateOfBirth: date({ mode: "date" }),
-  information: text("information"),
-  // profileImage: varchar("profileImage", { length: 100 }),
-});
-
 export const verifications = pgTable("verifications", {
   id: text("id").primaryKey(),
   identifier: text("identifier").notNull(),
@@ -87,102 +73,6 @@ export const verifications = pgTable("verifications", {
     .notNull(),
 });
 
-export const organizations = pgTable("organizations", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  slug: text("slug").notNull().unique(),
-  logo: text("logo"),
-  createdAt: timestamp("created_at").notNull(),
-  metadata: text("metadata"),
-});
-
-export const members = pgTable("members", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organizations.id, { onDelete: "cascade" }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  role: text("role").default("member").notNull(),
-  createdAt: timestamp("created_at").notNull(),
-});
-
-export const invitations = pgTable("invitations", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organizations.id, { onDelete: "cascade" }),
-  email: text("email").notNull(),
-  role: text("role"),
-  status: text("status").default("pending").notNull(),
-  expiresAt: timestamp("expires_at").notNull(),
-  inviterId: text("inviter_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-});
-
-// SCHEDULING TABLES
-export const events = pgTable(
-  "events",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    name: text("name").notNull(),
-    description: text("description"),
-    durationInMinutes: integer("duration_in_minutes").notNull(),
-    userId: text("user_id").notNull(),
-    isActive: boolean("is_active").notNull().default(true),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
-  },
-  (table) => [index("userIdIndex").on(table.userId)]
-);
-
-export const schedules = pgTable("schedules", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  timezone: text("timezone").notNull(),
-  userId: text("user_id").notNull().unique(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
-    .notNull(),
-});
-
-export const scheduleDayOfWeekEnum = pgEnum("day", DAYS_OF_WEEK_IN_ORDER);
-
-export const scheduleAvailability = pgTable(
-  "schedule_availability",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    scheduleId: uuid("schedule_id")
-      .notNull()
-      .references(() => schedules.id, { onDelete: "cascade" }),
-    startTime: text("start_time").notNull(),
-    endTime: text("end_time").notNull(),
-    dayOfWeek: scheduleDayOfWeekEnum("day_of_week").notNull(),
-  },
-  (table) => [index("scheduleIdIndex").on(table.scheduleId)]
-);
-
-export const scheduleRelations = relations(schedules, ({ many }) => ({
-  availabilities: many(scheduleAvailability),
-}));
-
-export const scheduleAvailabilityRelations = relations(
-  scheduleAvailability,
-  ({ one }) => ({
-    schedule: one(schedules, {
-      fields: [scheduleAvailability.scheduleId],
-      references: [schedules.id],
-    }),
-  })
-);
-
-// TO REFACTOR BELOW
 export const clinics = pgTable("clinics", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),
@@ -205,6 +95,17 @@ export const clinicMembers = pgTable("clinic_members", {
     .references(() => clinics.id),
   role: varchar("role", { length: 50 }).notNull(),
   joinedAt: timestamp("joined_at").notNull().defaultNow(),
+});
+
+export const patients = pgTable("patients", {
+  id: uuid("id").primaryKey(),
+  name: varchar("name", { length: 100 }),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  phone: varchar("phone", { length: 16 }),
+  address: varchar("address", { length: 100 }),
+  dateOfBirth: date({ mode: "date" }),
+  information: text("information"),
+  // profileImage: varchar("profileImage", { length: 100 }),
 });
 
 export const activityLogs = pgTable("activity_logs", {
@@ -276,10 +177,13 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   }),
 }));
 
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
 export type Clinic = typeof clinics.$inferSelect;
 export type NewClinic = typeof clinics.$inferInsert;
 export type ClinicMember = typeof clinicMembers.$inferSelect;
 export type NewClinicMember = typeof clinicMembers.$inferInsert;
+export type Patient = typeof patients.$inferSelect;
 export type ActivityLog = typeof activityLogs.$inferSelect;
 export type NewActivityLog = typeof activityLogs.$inferInsert;
 export type Invitation = typeof invitations_old.$inferSelect;
@@ -289,11 +193,6 @@ export type ClinicDataWithMembers = Clinic & {
     user: Pick<User, "id" | "name" | "email">;
   })[];
 };
-// TO REFACTOR ABOVE
-
-export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
-export type Patient = typeof patients.$inferSelect;
 export type Roles = "owner" | "psychologist" | "patient";
 export type UserContext = User & {
   clinicId: number | null;

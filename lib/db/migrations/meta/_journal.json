@@ -5,8 +5,22 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1763457009607,
-      "tag": "0000_red_supreme_intelligence",
+      "when": 1763635970681,
+      "tag": "0000_colossal_silver_fox",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1763649696578,
+      "tag": "0001_optimal_lord_hawal",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763654887454,
+      "tag": "0002_misty_silvermane",
       "breakpoints": true
     }
   ]

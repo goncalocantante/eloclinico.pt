@@ -15,7 +15,7 @@ import {
   type NewClinicMember,
   type NewActivityLog,
   ActivityType,
-  invitations,
+  invitations_old,
 } from "@/lib/db/schema";
 import { comparePasswords } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
@@ -127,12 +127,12 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     // Check if there's a valid invitation
     const [invitation] = await db
       .select()
-      .from(invitations)
+      .from(invitations_old)
       .where(
         and(
-          eq(invitations.id, parseInt(inviteId)),
-          eq(invitations.email, email),
-          eq(invitations.status, "pending")
+          eq(invitations_old.id, parseInt(inviteId)),
+          eq(invitations_old.email, email),
+          eq(invitations_old.status, "pending")
         )
       )
       .limit(1);
@@ -142,9 +142,9 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
       userRole = invitation.role;
 
       await db
-        .update(invitations)
+        .update(invitations_old)
         .set({ status: "accepted" })
-        .where(eq(invitations.id, invitation.id));
+        .where(eq(invitations_old.id, invitation.id));
 
       await logActivity(
         clinicId,
@@ -410,12 +410,12 @@ export const inviteClinicMember = validatedActionWithUser(
     // Check if there's an existing invitation
     const existingInvitation = await db
       .select()
-      .from(invitations)
+      .from(invitations_old)
       .where(
         and(
-          eq(invitations.email, email),
-          eq(invitations.clinicId, userWithClinic.clinicId),
-          eq(invitations.status, "pending")
+          eq(invitations_old.email, email),
+          eq(invitations_old.clinicId, userWithClinic.clinicId),
+          eq(invitations_old.status, "pending")
         )
       )
       .limit(1);
@@ -425,7 +425,7 @@ export const inviteClinicMember = validatedActionWithUser(
     }
 
     // Create a new invitation
-    await db.insert(invitations).values({
+    await db.insert(invitations_old).values({
       clinicId: userWithClinic.clinicId,
       email,
       role,
