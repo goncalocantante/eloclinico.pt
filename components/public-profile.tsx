@@ -8,10 +8,8 @@ import { Button } from "./ui/button";
 import { toast } from "sonner";
 import PublicEventCard from "./public-event-card";
 import { User } from "@/lib/db/schema";
-
+import { fetcher } from "@/lib/utils";
 import useSWR from "swr";
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Define types for the props that PublicProfile component will receive
 type PublicProfileProps = {

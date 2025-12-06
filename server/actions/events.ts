@@ -28,7 +28,7 @@ export async function createEvent(
     await db.insert(events).values({ ...data, userId });
   } catch (error: any) {
     // If any error occurs during the process, throw a new error with a readable message
-    throw new Error(`Failed to create event: ${error.message || error}`);
+    throw new Error(`Failed to book appointment: ${error.message || error}`);
   } finally {
     // Revalidate the '/events' path to ensure the page fetches fresh data after the database operation
     revalidatePath("/dashboard/events");

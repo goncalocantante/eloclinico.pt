@@ -15,3 +15,5 @@ export function timeToFloat(time: string): number {
   // Convert minutes into a fraction of an hour and add it to the hour
   return hours + minutes / 60;
 }
+
+export const fetcher = (url: string) => fetch(url).then((res) => res.json());

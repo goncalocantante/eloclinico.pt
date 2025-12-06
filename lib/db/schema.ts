@@ -12,10 +12,10 @@ import {
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { DAYS_OF_WEEK_IN_ORDER } from "@/constants";
+import { DAYS_OF_WEEK_IN_ORDER, APPOINTMENT_COLOR } from "@/constants";
 
 export const users = pgTable("users", {
-  id: text("id").primaryKey(),
+  id: uuid("id").primaryKey(),
   name: text("name").notNull(),
   role: varchar("role", { length: 20 }).notNull().default("owner"),
   email: text("email").notNull().unique(),
@@ -39,7 +39,7 @@ export const sessions = pgTable("sessions", {
     .notNull(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
-  userId: text("user_id")
+  userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
 });
@@ -48,7 +48,7 @@ export const accounts = pgTable("accounts", {
   id: text("id").primaryKey(),
   accountId: text("account_id").notNull(),
   providerId: text("provider_id").notNull(),
-  userId: text("user_id")
+  userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   accessToken: text("access_token"),
@@ -65,13 +65,13 @@ export const accounts = pgTable("accounts", {
 });
 
 export const patients = pgTable("patients", {
-  id: uuid("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 100 }),
   email: varchar("email", { length: 255 }).notNull().unique(),
   phone: varchar("phone", { length: 16 }),
-  address: varchar("address", { length: 100 }),
+  // address: varchar("address", { length: 100 }),
   dateOfBirth: date({ mode: "date" }),
-  information: text("information"),
+  // information: text("information"),
   // profileImage: varchar("profileImage", { length: 100 }),
 });
 
@@ -101,7 +101,7 @@ export const members = pgTable("members", {
   organizationId: text("organization_id")
     .notNull()
     .references(() => organizations.id, { onDelete: "cascade" }),
-  userId: text("user_id")
+  userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   role: text("role").default("member").notNull(),
@@ -117,7 +117,7 @@ export const invitations = pgTable("invitations", {
   role: text("role"),
   status: text("status").default("pending").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
-  inviterId: text("inviter_id")
+  inviterId: uuid("inviter_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
 });
@@ -130,7 +130,9 @@ export const events = pgTable(
     name: text("name").notNull(),
     description: text("description"),
     durationInMinutes: integer("duration_in_minutes").notNull(),
-    userId: text("user_id").notNull(),
+    userId: uuid("user_id")
+      .references(() => users.id)
+      .notNull(),
     isActive: boolean("is_active").notNull().default(true),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -144,7 +146,10 @@ export const events = pgTable(
 export const schedules = pgTable("schedules", {
   id: uuid("id").primaryKey().defaultRandom(),
   timezone: text("timezone").notNull(),
-  userId: text("user_id").notNull().unique(),
+  userId: uuid("user_id")
+    .references(() => users.id)
+    .notNull()
+    .unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -182,6 +187,37 @@ export const scheduleAvailabilityRelations = relations(
   })
 );
 
+// APPOINTMENT TABLES
+export const appointmentColorEnum = pgEnum("color_enum", APPOINTMENT_COLOR);
+
+export const appointments = pgTable("appointments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "restrict" }),
+  patientId: uuid("patient_id")
+    .notNull()
+    .references(() => patients.id, { onDelete: "restrict" }),
+  title: text("title"),
+  appointmentType: text("appointment_type").notNull(),
+  startDateTime: timestamp("start_date_time").notNull(),
+  endDateTime: timestamp("end_date_time").notNull(),
+  notes: text("notes"),
+  color: appointmentColorEnum("color").notNull(),
+  scheduleId: uuid("schedule_id")
+    .notNull()
+    .references(() => schedules.id, { onDelete: "cascade" }),
+  eventId: uuid("event_id")
+    .notNull()
+    .references(() => events.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+  source: text("source").notNull().default("manual"), // 'manual' or 'public'
+});
+
 // TO REFACTOR BELOW
 export const clinics = pgTable("clinics", {
   id: serial("id").primaryKey(),
@@ -197,7 +233,7 @@ export const clinics = pgTable("clinics", {
 
 export const clinicMembers = pgTable("clinic_members", {
   id: serial("id").primaryKey(),
-  userId: text("user_id")
+  userId: uuid("user_id")
     .notNull()
     .references(() => users.id),
   clinicId: integer("clinic_id")
@@ -212,7 +248,7 @@ export const activityLogs = pgTable("activity_logs", {
   clinicId: integer("clinic_id")
     .notNull()
     .references(() => clinics.id),
-  userId: text("user_id").references(() => users.id),
+  userId: uuid("user_id").references(() => users.id),
   action: text("action").notNull(),
   timestamp: timestamp("timestamp").notNull().defaultNow(),
   ipAddress: varchar("ip_address", { length: 45 }),
@@ -225,7 +261,7 @@ export const invitations_old = pgTable("invitations_old", {
     .references(() => clinics.id),
   email: varchar("email", { length: 255 }).notNull(),
   role: varchar("role", { length: 50 }).notNull(),
-  invitedBy: text("invited_by")
+  invitedBy: uuid("invited_by")
     .notNull()
     .references(() => users.id),
   invitedAt: timestamp("invited_at").notNull().defaultNow(),

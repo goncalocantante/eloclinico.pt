@@ -19,13 +19,12 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Loader2, PlusCircle } from "lucide-react";
+import { fetcher } from "@/lib/utils";
 
 type ActionState = {
   error?: string;
   success?: string;
 };
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 function SubscriptionSkeleton() {
   return (

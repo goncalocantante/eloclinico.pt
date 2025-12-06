@@ -31,5 +31,13 @@ export const auth = betterAuth({
       deletedAt: { type: "date", required: false, defaultValue: null },
     },
   },
+  advanced: {
+    database: {
+      generateId: (options) => {
+        // Generate UUIDs for all tables including users
+        return crypto.randomUUID();
+      },
+    },
+  },
   plugins: [nextCookies(), organization()],
 });
