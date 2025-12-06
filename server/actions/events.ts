@@ -113,10 +113,18 @@ export async function deleteEvent(
 type EventRow = typeof events.$inferSelect;
 
 // Async function to fetch all events (active and inactive) for a specific user
-export async function getEvents(authUserId: string): Promise<EventRow[]> {
+export async function getEvents(): Promise<EventRow[]> {
+  // Authenticate the user
+  const user = await getUser();
+  const userId = user?.id;
+
+  // Throw an error if no authenticated user
+  if (!userId) {
+    throw new Error("User not authenticated.");
+  }
   // Query the database for events where the authUserId matches
   const events = await db.query.events.findMany({
-    where: ({ userId: userIdCol }, { eq }) => eq(userIdCol, authUserId),
+    where: ({ userId: userIdCol }, { eq }) => eq(userIdCol, userId),
     orderBy: ({ name }, { asc, sql }) => asc(sql`lower(${name})`),
   });
 

@@ -11,20 +11,27 @@ export async function getAppointments() {
 
   const rows = await db.select().from(appointments);
   const rowsMapped = rows.map((row) => {
-    // Build start/end ISO strings using date + hour/minute from DB
-    const startDate = new Date(row.startDate);
-    startDate.setHours(row.startHour, row.startMinute, 0, 0);
-
-    const endDate = new Date(row.endDate);
-    endDate.setHours(row.endHour, row.endMinute, 0, 0);
-
+    // Extract hour and minute from timestamps for frontend compatibility
+    const startDate = new Date(row.startDateTime);
+    const endDate = new Date(row.endDateTime);
+    const startHour = startDate.getHours();
+    const startMinute = startDate.getMinutes();
+    const endHour = endDate.getHours();
+    const endMinute = endDate.getMinutes();
     return {
       id: row.id,
       title: row.title,
       notes: row.notes ?? "", // default empty string
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
+      startHour,
+      startMinute,
+      endHour,
+      endMinute,
       color: row.color as TEventColor,
+      appointmentType: row.appointmentType,
+      scheduleId: row.scheduleId,
+      eventId: row.eventId,
       user: {
         id: row.userId,
         name: user.name, // you can fetch user info from users table if needed

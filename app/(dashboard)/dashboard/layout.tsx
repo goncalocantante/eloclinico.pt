@@ -9,24 +9,8 @@ import { UserContext } from "@/lib/db/schema";
 import useSWR from "swr";
 
 import { CalendarProvider } from "@/calendar/contexts/calendar-context";
-import { IUser, IEvent } from "@/calendar/interfaces";
+import { IUser } from "@/calendar/interfaces";
 import { fetcher } from "@/lib/utils";
-
-// Fetch your events and users data
-// const events = await getEvents();
-// const users = await getUsers();
-const events: IEvent[] = [
-  {
-    id: 123456,
-    title: "Team Meeting",
-    description:
-      "Monthly sync with the product team to discuss progress and blockers.",
-    startDate: "2025-11-26T10:00:00.000Z",
-    endDate: "2025-11-27T11:00:00.000Z",
-    color: "blue",
-    user: { id: "mock-id", name: "Mock User", picturePath: null },
-  },
-];
 
 const users: IUser[] = [
   { id: "mock-id", name: "Mock User", picturePath: null },
@@ -41,29 +25,18 @@ export default function DashboardLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const { data: user } = useSWR<UserContext>("/api/user", fetcher);
-  const { data: events } = useSWR<IEvent>("/api/appointments", fetcher);
-  const isPsychologist =
-    user?.effectiveRole === "owner" || user?.role === "psychologist";
 
   const navItems = [
-    { href: "/dashboard", icon: Users, label: "Clinic" },
-    ...(isPsychologist
-      ? [
-          {
-            href: "/dashboard/patients",
-            icon: Users,
-            label: "Patients",
-          },
-        ]
-      : []),
+    // { href: "/dashboard", icon: Users, label: "Clinic" },
+    { href: "/dashboard/patients", icon: Users, label: "Patients" },
     { href: "/dashboard/calendar", icon: Settings, label: "Calendar" },
-    { href: "/dashboard/general", icon: Settings, label: "General" },
-    { href: "/dashboard/activity", icon: Activity, label: "Activity" },
-    { href: "/dashboard/security", icon: Shield, label: "Security" },
+    // { href: "/dashboard/general", icon: Settings, label: "General" },
+    // { href: "/dashboard/activity", icon: Activity, label: "Activity" },
+    // { href: "/dashboard/security", icon: Shield, label: "Security" },
   ];
 
   return (
-    <CalendarProvider users={users} events={events}>
+    <CalendarProvider users={users}>
       <div className="flex flex-col min-h-[calc(100dvh-68px)] max-w-7xl mx-auto w-full">
         {/* Mobile header */}
         <div className="lg:hidden flex items-center justify-between bg-white border-b border-gray-200 p-4">

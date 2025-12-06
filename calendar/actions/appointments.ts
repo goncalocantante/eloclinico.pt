@@ -1,14 +1,12 @@
 "use server";
 
-import {
-  validatedAction,
-  validatedActionWithUser,
-} from "@/lib/auth/middleware";
 import { db } from "@/lib/db/drizzle";
 
 import { eventSchema } from "@/calendar/schemas";
 import { appointments } from "@/lib/db/schema";
 import { getUser } from "@/lib/db/queries/queries";
+import { getSchedule } from "@/server/actions/schedule";
+import { getPublicEvents } from "@/server/actions/events";
 
 export const createAppointment = async (data: any) => {
   const user = await getUser();
@@ -16,53 +14,52 @@ export const createAppointment = async (data: any) => {
     throw new Error("User is not authenticated");
   }
 
-  const { patient_id, ...incompleteData } = data;
-
-  const result = eventSchema.safeParse(incompleteData);
+  const result = eventSchema.safeParse(data);
   if (!result.success) {
-    console.log("error: ", result.error);
-    return { error: result.error.errors[0].message };
+    console.log("Error parsing event schema: ", result);
+    return { error: result.error.issues[0].message };
   }
 
+  // Get user's schedule and first active event
+  const schedule = await getSchedule(user.id);
+  if (!schedule) {
+    throw new Error("User schedule not found");
+  }
+
+  const events = await getPublicEvents(user.id);
+  if (events.length === 0) {
+    throw new Error("No active events found for user");
+  }
+  const eventId = events.find((event) => event.id === data.appointmentType)?.id;
+  if (!eventId) {
+    throw new Error("Event not found");
+  }
+
+  // Combine startDate and startTime into startDateTime
+  const startDateTime = new Date(data.startDate);
+  const endDate = data.startDate;
+  const endDateTime = new Date(endDate);
+
+  // Parse the "HH:mm" string from data.startTime
+  const [startHours, startMinutes] = data.startTime.split(":").map(Number);
+  const [endHours, endMinutes] = data.endTime.split(":").map(Number);
+  startDateTime.setHours(startHours, startMinutes);
+  endDateTime.setHours(endHours, endMinutes);
+
   const dbData = {
-    user: user.id,
+    userId: user.id,
     patientId: data.patientId,
-    title: data.title,
+    title: data.title || null,
     appointmentType: data.appointmentType,
-    startDate: data.startDate,
-    endDate: data.startDate,
-    startTime: data.startTime,
-    endTime: data.endTime,
-    description: data.description,
+    startDateTime: startDateTime,
+    endDateTime: endDateTime,
+    notes: data.description || null,
     color: data.color,
+    scheduleId: schedule.id,
+    eventId: eventId,
   };
 
-  console.log("user: ", user);
-  console.log("data: ", data);
+  const res = await db.insert(appointments).values(dbData).returning();
 
-  await db.insert(appointments).values(dbData);
+  return res;
 };
-
-// export const createAppointment = validatedActionWithUser(
-//   eventSchema,
-//   async (data, _, user) => {
-//     // const { currentPassword, newPassword, confirmPassword } = data;
-//     console.log("user: ", user);
-//     console.log("data: ", data);
-
-//     const dbData = {
-//       user: data.user?.id,
-//       title: data.title,
-//       description: data.description,
-//       startDate: data.startDate,
-//       endDate: data.endDate,
-//       startHour: data.startTime.hour,
-//       startMinute: data.startTime.minute,
-//       endHour: data.endTime.hour,
-//       endMinute: data.endTime.minute,
-//       color: data.color,
-//     };
-
-//     await db.insert(appointments).values(dbData);
-//   }
-// );

@@ -4,6 +4,7 @@ import { Manrope } from "next/font/google";
 import { getUserWithContext, getClinicForUser } from "@/lib/db/queries/queries";
 import { SWRConfig } from "swr";
 import { getAppointments } from "@/lib/db/queries/appointment-queries";
+import { getEvents } from "@/server/actions/events";
 
 export const metadata: Metadata = {
   title: "Psychologist App",
@@ -36,6 +37,7 @@ export default function RootLayout({
               "/api/user": getUserWithContext(),
               "/api/clinic": getClinicForUser(),
               "/api/appointments": getAppointments(),
+              "/api/events": getEvents(),
             },
           }}
         >

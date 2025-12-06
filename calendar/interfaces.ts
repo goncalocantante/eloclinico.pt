@@ -12,8 +12,11 @@ export interface IEvent {
   endDate: string;
   title: string;
   color: TEventColor;
-  description: string;
   user: IUser;
+  appointmentType: string;
+  notes: string;
+  scheduleId: string;
+  eventId: string;
 }
 
 export interface ICalendarCell {

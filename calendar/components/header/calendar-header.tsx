@@ -10,7 +10,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 
-import { UserSelect } from "@/calendar/components/header/user-select";
+// import { UserSelect } from "@/calendar/components/header/user-select";
 import { TodayButton } from "@/calendar/components/header/today-button";
 import { DateNavigator } from "@/calendar/components/header/date-navigator";
 import { AddEventDialog } from "@/calendar/components/dialogs/add-event-dialog";

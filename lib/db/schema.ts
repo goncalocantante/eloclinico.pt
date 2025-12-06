@@ -330,6 +330,8 @@ export type ClinicDataWithMembers = Clinic & {
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Patient = typeof patients.$inferSelect;
+export type Event = typeof events.$inferSelect;
+export type NewEvent = typeof events.$inferInsert;
 export type Roles = "owner" | "psychologist" | "patient";
 export type UserContext = User & {
   clinicId: number | null;

@@ -1,26 +1,19 @@
 import { z } from "zod";
 
-export const APPOINTMENT_TYPES = [
-  "Individual Session",
-  "Initial Consultation",
-  "Follow-up Consultation",
-  "Group Session",
-  "Other",
-] as const;
-
 export const eventSchema = z.object({
-  patientId: z.string(),
-  appointmentType: z.enum(APPOINTMENT_TYPES, {
-    error: "Appointment type is required",
-  }),
-  startDate: z.preprocess(
-    (val) => (typeof val === "string" ? new Date(val) : val),
-    z.date()
-  ),
-  startTime: z.object({ hour: z.number(), minute: z.number() }),
-  endTime: z.object({ hour: z.number(), minute: z.number() }),
-  description: z.string().optional(),
-  color: z.enum(["blue", "green", "red", "yellow", "purple", "orange"]),
+  userId: z.uuid().optional(),
+  patientId: z.uuid().optional(),
+  title: z.string().optional(),
+  appointmentType: z.string().min(1, "Appointment type is required"),
+  startDate: z.date().optional(),
+  startTime: z.iso.time({ precision: -1 }).optional(),
+  endTime: z.iso.time({ precision: -1 }).optional(),
+  notes: z.string().optional(),
+  color: z
+    .enum(["blue", "green", "red", "yellow", "purple", "orange"])
+    .optional(),
+  // scheduleId: z.uuid().optional(),
+  appointmentTypeId: z.uuid(),
 });
 
 export type TEventFormData = z.infer<typeof eventSchema>;

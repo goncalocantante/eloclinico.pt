@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState } from "react";
+import useSWR from "swr";
 
 import type { Dispatch, SetStateAction } from "react";
 import type { IEvent, IUser } from "@/calendar/interfaces";
@@ -9,8 +10,9 @@ import type {
   TVisibleHours,
   TWorkingHours,
 } from "@/calendar/types";
-
+import { Patient, type Event } from "@/lib/db/schema";
 import { authClient } from "@/lib/auth/client";
+import { fetcher } from "@/lib/utils";
 
 interface ICalendarContext {
   selectedDate: Date;
@@ -24,8 +26,12 @@ interface ICalendarContext {
   setWorkingHours: Dispatch<SetStateAction<TWorkingHours>>;
   visibleHours: TVisibleHours;
   setVisibleHours: Dispatch<SetStateAction<TVisibleHours>>;
-  events: IEvent[];
-  setLocalEvents: Dispatch<SetStateAction<IEvent[]>>;
+  events: Event[];
+  refetchEvents: () => Promise<Event[] | undefined>;
+  appointments: IEvent[];
+  refetchAppointments: () => Promise<IEvent[] | undefined>;
+  patients: Patient[];
+  refetchPatients: () => Promise<Patient[] | undefined>;
 }
 
 const CalendarContext = createContext({} as ICalendarContext);
@@ -45,11 +51,9 @@ const VISIBLE_HOURS = { from: 7, to: 18 };
 export function CalendarProvider({
   children,
   users,
-  events,
 }: {
   children: React.ReactNode;
   users: IUser[];
-  events: IEvent[];
 }) {
   const [badgeVariant, setBadgeVariant] = useState<TBadgeVariant>("colored");
   const [visibleHours, setVisibleHours] =
@@ -72,12 +76,22 @@ export function CalendarProvider({
   //   "all"
   // );
 
-  console.log("selectedUserId", selectedUserId);
-  // This localEvents doesn't need to exists in a real scenario.
-  // It's used here just to simulate the update of the events.
-  // In a real scenario, the events would be updated in the backend
-  // and the request that fetches the events should be refetched
-  const [localEvents, setLocalEvents] = useState<IEvent[]>(events);
+  // Fetch appointments from the database using SWR
+  const { data: appointments = [], mutate: refetchAppointments } = useSWR<
+    IEvent[]
+  >("/api/appointments", fetcher);
+
+  // Fetch events from the database using SWR
+  const { data: events = [], mutate: refetchEvents } = useSWR<Event[]>(
+    "/api/events",
+    fetcher
+  );
+
+  // Fetch appointments from the database using SWR
+  const { data: patients = [], mutate: refetchPatients } = useSWR<Patient[]>(
+    "/api/patients",
+    fetcher
+  );
 
   const handleSelectDate = (date: Date | undefined) => {
     if (!date) return;
@@ -98,9 +112,12 @@ export function CalendarProvider({
         setVisibleHours,
         workingHours,
         setWorkingHours,
-        // If you go to the refetch approach, you can remove the localEvents and pass the events directly
-        events: localEvents,
-        setLocalEvents,
+        appointments: appointments,
+        refetchAppointments,
+        events: events,
+        refetchEvents,
+        patients: patients,
+        refetchPatients,
       }}
     >
       {children}

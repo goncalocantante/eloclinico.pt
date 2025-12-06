@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { Resolver, useForm } from "react-hook-form";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronDownIcon, ChevronsUpDown } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useDisclosure } from "@/hooks/use-disclosure";
@@ -10,9 +10,8 @@ import { useCalendar } from "@/calendar/contexts/calendar-context";
 
 import { createAppointment } from "../../actions/appointments";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
-import { TimeInput } from "@/components/ui/time-input";
-import { SingleDayPicker } from "@/components/ui/single-day-picker";
 import {
   Form,
   FormField,
@@ -52,24 +51,19 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import {
-  APPOINTMENT_TYPES,
-  eventSchema,
-  TEventFormData,
-} from "@/calendar/schemas";
+import { eventSchema, TEventFormData } from "@/calendar/schemas";
 import { Patient } from "@/lib/db/schema";
-
-import type { TimeValue } from "react-aria-components";
 
 import useSWR from "swr";
 import { fetcher } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 interface IProps {
   children: React.ReactNode;
   startDate?: Date;
-  startTime?: { hour: number; minute: number };
-  endTime?: { hour: number; minute: number };
+  startTime?: string | undefined;
+  endTime?: string | undefined;
 }
 
 export function AddEventDialog({
@@ -78,36 +72,37 @@ export function AddEventDialog({
   startTime,
   endTime,
 }: IProps) {
-  const { users } = useCalendar();
+  const {
+    users,
+    refetchAppointments,
+    events: appointmentTypes,
+    refetchEvents,
+    patients,
+    refetchPatients,
+  } = useCalendar();
 
   const { isOpen, onClose, onToggle } = useDisclosure();
 
   const form = useForm<TEventFormData>({
-    resolver: zodResolver(eventSchema) as Resolver<TEventFormData>,
+    resolver: zodResolver(eventSchema),
     defaultValues: {
-      patientId: "",
-      appointmentType: APPOINTMENT_TYPES[0],
-      description: "",
+      patientId: undefined,
+      appointmentType: appointmentTypes?.[0]?.name,
       startDate: typeof startDate !== "undefined" ? startDate : undefined,
-      startTime: typeof startTime !== "undefined" ? startTime : undefined,
-      endTime: typeof endTime !== "undefined" ? endTime : undefined,
+      startTime: startTime ? startTime.toString() : undefined,
+      endTime: endTime ? endTime.toString() : undefined,
+      notes: "",
       color: "blue",
     },
   });
 
   const onSubmit = async (_values: TEventFormData) => {
-    // const formData = new FormData();
-    // formData.append("startDate", _values.startDate.toISOString());
-    // formData.append("endDate", _values.endDate.toISOString());
-    // formData.append("startTime", JSON.stringify(_values.startTime));
-    // formData.append("endTime", JSON.stringify(_values.endTime));
-    // Object.entries(_values).forEach(([key, value]) => {
-    //   if (typeof value !== "object") formData.append(key, String(value));
-    // });
-    // await createAppointment(undefined as any, formData);
-
     console.log("values: ", _values);
+
     await createAppointment(_values);
+
+    // Refetch appointments from the database after creating a new one
+    await refetchAppointments();
 
     onClose();
     form.reset();
@@ -117,11 +112,9 @@ export function AddEventDialog({
     form.reset({
       startDate,
       startTime,
+      endTime,
     });
-  }, [startDate, startTime, form]);
-
-  const { data: patients = [] } = useSWR<Patient[]>("/api/patients", fetcher);
-  const patientOptions = patients.map((p) => ({ value: p.id, label: p.name }));
+  }, [startDate, startTime, endTime, form]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onToggle}>
@@ -154,11 +147,10 @@ export function AddEventDialog({
                           className="w-[200px] justify-between"
                         >
                           {field.value
-                            ? patientOptions.find(
-                                (patient) => patient.value === field.value
-                              )?.label
-                            : "Select patient..."}
-
+                            ? patients.find(
+                                (patient) => patient.id === field.value
+                              )?.name
+                            : "Select patient"}
                           <ChevronsUpDown className="opacity-50" />
                         </Button>
                       </FormControl>
@@ -172,19 +164,19 @@ export function AddEventDialog({
                         <CommandList>
                           <CommandEmpty>No patient found.</CommandEmpty>
                           <CommandGroup>
-                            {patientOptions.map((patient) => (
+                            {patients.map((patient) => (
                               <CommandItem
-                                key={patient.value}
-                                value={patient.label || undefined}
+                                key={patient.id}
+                                value={patient.name || undefined}
                                 onSelect={() => {
-                                  form.setValue("patientId", patient.value);
+                                  form.setValue("patientId", patient.id);
                                 }}
                               >
-                                {patient.label}
+                                {patient.name}
                                 <Check
                                   className={cn(
                                     "ml-auto",
-                                    field.value === patient.value
+                                    field.value === patient.id
                                       ? "opacity-100"
                                       : "opacity-0"
                                   )}
@@ -200,67 +192,6 @@ export function AddEventDialog({
                 </FormItem>
               )}
             />
-            {/* <FormField
-              control={form.control}
-              name="user"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>Responsible</FormLabel>
-                  <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger data-invalid={fieldState.invalid}>
-                        <SelectValue placeholder="Select an option" />
-                      </SelectTrigger>
-
-                      <SelectContent>
-                        {users.map((user) => (
-                          <SelectItem
-                            key={user.id}
-                            value={user.id}
-                            className="flex-1"
-                          >
-                            <div className="flex items-center gap-2">
-                              <Avatar key={user.id} className="size-6">
-                                <AvatarImage
-                                  src={user.picturePath ?? undefined}
-                                  alt={user.name}
-                                />
-                                <AvatarFallback className="text-xxs">
-                                  {user.name[0]}
-                                </AvatarFallback>
-                              </Avatar>
-
-                              <p className="truncate">{user.name}</p>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
-            {/* <FormField
-              control={form.control}
-              name="title"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel htmlFor="title">Title</FormLabel>
-
-                  <FormControl>
-                    <Input
-                      id="title"
-                      placeholder="Enter a title"
-                      data-invalid={fieldState.invalid}
-                      {...field}
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
             <FormField
               control={form.control}
               name="appointmentType"
@@ -273,10 +204,10 @@ export function AddEventDialog({
                         <SelectValue placeholder="Select an option" />
                       </SelectTrigger>
                       <SelectContent>
-                        {APPOINTMENT_TYPES.map((type, index) => (
-                          <SelectItem value={type} key={index}>
+                        {appointmentTypes.map((type, index) => (
+                          <SelectItem value={type.id} key={index}>
                             <div className="flex items-center gap-2">
-                              {type}
+                              {type.name}
                             </div>
                           </SelectItem>
                         ))}
@@ -294,17 +225,33 @@ export function AddEventDialog({
                 render={({ field, fieldState }) => (
                   <FormItem className="flex-1">
                     <FormLabel htmlFor="startDate">Start Date</FormLabel>
-
                     <FormControl>
-                      <SingleDayPicker
-                        id="startDate"
-                        value={field.value}
-                        onSelect={(date) => field.onChange(date as Date)}
-                        placeholder="Select a date"
-                        data-invalid={fieldState.invalid}
-                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            id="date"
+                            className="w-48 justify-between font-normal"
+                          >
+                            {field.value
+                              ? field.value.toLocaleDateString()
+                              : "Select date"}
+                            <ChevronDownIcon />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="w-auto overflow-hidden p-0"
+                          align="start"
+                        >
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            captionLayout="dropdown"
+                            onSelect={field.onChange}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </FormControl>
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -317,11 +264,11 @@ export function AddEventDialog({
                     <FormLabel>Start Time</FormLabel>
 
                     <FormControl>
-                      <TimeInput
-                        value={field.value as TimeValue}
-                        onChange={field.onChange}
-                        hourCycle={12}
-                        data-invalid={fieldState.invalid}
+                      <Input
+                        {...field}
+                        type="time"
+                        // step="1"
+                        // className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                       />
                     </FormControl>
 
@@ -335,16 +282,14 @@ export function AddEventDialog({
                 render={({ field, fieldState }) => (
                   <FormItem className="flex-1">
                     <FormLabel>End Time</FormLabel>
-
                     <FormControl>
-                      <TimeInput
-                        value={field.value as TimeValue}
-                        onChange={field.onChange}
-                        hourCycle={12}
-                        data-invalid={fieldState.invalid}
+                      <Input
+                        {...field}
+                        type="time"
+                        // step="1"
+                        // className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                       />
                     </FormControl>
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -420,10 +365,10 @@ export function AddEventDialog({
             />
             <FormField
               control={form.control}
-              name="description"
+              name="notes"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Notes</FormLabel>
 
                   <FormControl>
                     <Textarea
