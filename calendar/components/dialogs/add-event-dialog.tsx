@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Resolver, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Check, ChevronDownIcon, ChevronsUpDown } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -52,10 +52,7 @@ import {
 } from "@/components/ui/popover";
 
 import { eventSchema, TEventFormData } from "@/calendar/schemas";
-import { Patient } from "@/lib/db/schema";
 
-import useSWR from "swr";
-import { fetcher } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
@@ -97,13 +94,10 @@ export function AddEventDialog({
   });
 
   const onSubmit = async (_values: TEventFormData) => {
-    console.log("values: ", _values);
-
     await createAppointment(_values);
 
     // Refetch appointments from the database after creating a new one
     await refetchAppointments();
-
     onClose();
     form.reset();
   };

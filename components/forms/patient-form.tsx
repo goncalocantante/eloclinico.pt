@@ -25,23 +25,40 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { createPatient } from "@/server/actions/patients";
+import { useCalendar } from "@/calendar/contexts/calendar-context";
 
-export function PatientForm() {
+interface PatientFormProps {
+  onClose?: () => void;
+}
+
+export function PatientForm({ onClose }: PatientFormProps) {
+  const { refetchPatients } = useCalendar();
   // 1. Define your form.
   const form = useForm<z.infer<typeof createClientFormSchema>>({
     resolver: zodResolver(createClientFormSchema),
-    // defaultValues: {
-    // },
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      birthdate: undefined,
+    },
   });
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof createClientFormSchema>) {
     await createPatient(values);
+    await refetchPatients();
+    onClose?.();
+    form.reset();
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form
+        id="patient-form"
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-8"
+      >
         <FormField
           control={form.control}
           name="name"
@@ -73,7 +90,11 @@ export function PatientForm() {
             <FormItem className="flex flex-col items-start">
               <FormLabel className="text-left">Phone Number</FormLabel>
               <FormControl className="w-full">
-                <PhoneInput placeholder="Enter a phone number" {...field} />
+                <PhoneInput
+                  placeholder="Enter a phone number"
+                  defaultCountry="PT"
+                  {...field}
+                />
               </FormControl>
               <FormDescription className="text-left">
                 Enter a phone number
@@ -117,15 +138,12 @@ export function PatientForm() {
                 </PopoverContent>
               </Popover>
               <FormDescription className="text-left">
-                Enter a phone number
+                Enter the date of birth
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <div className="flex flex-col gap-3"></div>
-
-        <Button type="submit">Submit</Button>
       </form>
     </Form>
   );
