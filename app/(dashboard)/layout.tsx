@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { User } from "@/lib/db/schema";
 import useSWR, { mutate } from "swr";
 import { fetcher } from "@/lib/utils";
+import Logo from "@/components/logo";
 
 function UserMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -82,15 +83,7 @@ function Header() {
     <header className="border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <Link href="/" className="flex items-center">
-          <div className="flex items-center gap-2">
-            <Sprout
-              className="w-10 h-10 text-slate-600 rotate-[-45deg]"
-              strokeWidth={2.5}
-            />
-            <span className="text-xl font-bold tracking-tight text-slate-800">
-              elo
-            </span>
-          </div>
+          <Logo size={24} />
         </Link>
         <div className="flex items-center space-x-4">
           <Suspense fallback={<div className="h-9" />}>

@@ -29,20 +29,13 @@ function GoogleButton({
       type="button"
       aria-label={label}
       onClick={signIn}
-      className={
-        (cn(
-          "w-full inline-flex justify-center items-center py-2 px-4 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-        ),
-        className)
-      }
-      //   className={cn(
-      //     // "inline-flex w-full items-center justify-center rounded-full border border-[#888] bg-white text-[#444] shadow-sm shadow-gray-400/50 transition hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4285f4]/60 focus-visible:ring-offset-2 font-['Roboto']",
-      //     "inline-flex w-full items-center justify-center rounded-full border border-[#888] bg-white text-[#444] shadow-sm shadow-gray-400/50 transition hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4285f4]/60 focus-visible:ring-offset-2 font-['Roboto']",
-      //     className
-      //   )}
+      className={cn(
+        "w-full flex justify-center items-center gap-2 py-2 px-4 my-6 border border-gray-300 rounded-full shadow-sm text-sm font-medium text-gray-700bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500",
+        className
+      )}
       {...props}
     >
-      <span className="flex h-[42px] w-[42px] items-center justify-center">
+      <span className="flex h-[28px] w-[28px] items-center justify-center">
         <svg
           viewBox="0 0 18 18"
           aria-hidden="true"
@@ -67,7 +60,7 @@ function GoogleButton({
           />
         </svg>
       </span>
-      <span className="pl-3 text-left text-[14px] font-bold tracking-tight">
+      <span className="text-left text-[14px] font-bold tracking-tight">
         {label}
       </span>
     </button>

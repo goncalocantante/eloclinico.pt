@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 
 import { CalendarProvider } from "@/calendar/contexts/calendar-context";
 import { IUser } from "@/calendar/interfaces";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/app-sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 const users: IUser[] = [
