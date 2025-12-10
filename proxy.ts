@@ -4,7 +4,7 @@ import { getSessionCookie } from "better-auth/cookies";
 
 const protectedRoutes = "/dashboard";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = getSessionCookie(request);
   const isProtectedRoute = pathname.startsWith(protectedRoutes);
@@ -20,6 +20,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
-  runtime: "nodejs",
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"]
 };
