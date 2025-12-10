@@ -35,7 +35,7 @@ export default async function EventsPage() {
           asChild
         >
           <Link href="/dashboard/events/new">
-            <CalendarPlus className="mr-4 size-7" /> Book Appointment
+            <CalendarPlus className="mr-4 size-7" />
           </Link>
         </Button>
       </div>

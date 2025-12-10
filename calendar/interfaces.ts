@@ -8,6 +8,7 @@ export interface IUser {
 
 export interface IEvent {
   id: number;
+  patientId: string;
   startDate: string;
   endDate: string;
   title: string;

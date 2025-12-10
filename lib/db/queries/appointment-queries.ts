@@ -14,20 +14,13 @@ export async function getAppointments() {
     // Extract hour and minute from timestamps for frontend compatibility
     const startDate = new Date(row.startDateTime);
     const endDate = new Date(row.endDateTime);
-    const startHour = startDate.getHours();
-    const startMinute = startDate.getMinutes();
-    const endHour = endDate.getHours();
-    const endMinute = endDate.getMinutes();
     return {
       id: row.id,
       title: row.title,
+      patientId: row.patientId,
       notes: row.notes ?? "", // default empty string
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
-      startHour,
-      startMinute,
-      endHour,
-      endMinute,
       color: row.color as TEventColor,
       appointmentType: row.appointmentType,
       scheduleId: row.scheduleId,

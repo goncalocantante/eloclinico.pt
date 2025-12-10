@@ -20,6 +20,7 @@ function GoogleButton({
 
     await authClient.signIn.social({
       provider: "google",
+      callbackURL: "/dashboard/calendar/week-view",
     });
   };
 

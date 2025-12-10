@@ -2,15 +2,17 @@
 
 import { createContext, useContext, useState } from "react";
 import useSWR from "swr";
+import { pt } from "date-fns/locale";
 
 import type { Dispatch, SetStateAction } from "react";
+import type { Locale } from "date-fns";
 import type { IEvent, IUser } from "@/calendar/interfaces";
 import type {
   TBadgeVariant,
   TVisibleHours,
   TWorkingHours,
 } from "@/calendar/types";
-import { Patient, type Event } from "@/lib/db/schema";
+import { type Event } from "@/lib/db/schema";
 import { authClient } from "@/lib/auth/client";
 import { fetcher } from "@/lib/utils";
 
@@ -30,8 +32,8 @@ interface ICalendarContext {
   refetchEvents: () => Promise<Event[] | undefined>;
   appointments: IEvent[];
   refetchAppointments: () => Promise<IEvent[] | undefined>;
-  patients: Patient[];
-  refetchPatients: () => Promise<Patient[] | undefined>;
+  locale: Locale;
+  setLocale: (locale: Locale) => void;
 }
 
 const CalendarContext = createContext({} as ICalendarContext);
@@ -60,6 +62,7 @@ export function CalendarProvider({
     useState<TVisibleHours>(VISIBLE_HOURS);
   const [workingHours, setWorkingHours] =
     useState<TWorkingHours>(WORKING_HOURS);
+  const [locale, setLocale] = useState<Locale>(pt);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -87,12 +90,6 @@ export function CalendarProvider({
     fetcher
   );
 
-  // Fetch appointments from the database using SWR
-  const { data: patients = [], mutate: refetchPatients } = useSWR<Patient[]>(
-    "/api/patients",
-    fetcher
-  );
-
   const handleSelectDate = (date: Date | undefined) => {
     if (!date) return;
     setSelectedDate(date);
@@ -116,8 +113,8 @@ export function CalendarProvider({
         refetchAppointments,
         events: events,
         refetchEvents,
-        patients: patients,
-        refetchPatients,
+        locale,
+        setLocale,
       }}
     >
       {children}

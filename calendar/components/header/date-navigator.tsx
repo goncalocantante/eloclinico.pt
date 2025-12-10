@@ -18,38 +18,51 @@ interface IProps {
 }
 
 export function DateNavigator({ view, events }: IProps) {
-  const { selectedDate, setSelectedDate } = useCalendar();
+  const { selectedDate, setSelectedDate, locale } = useCalendar();
 
-  const month = formatDate(selectedDate, "MMMM");
+  const day = selectedDate.getDate();
+  const month = formatDate(selectedDate, "MMMM", { locale });
   const year = selectedDate.getFullYear();
 
-  const eventCount = useMemo(() => getEventsCount(events, selectedDate, view), [events, selectedDate, view]);
+  const eventCount = useMemo(
+    () => getEventsCount(events, selectedDate, view),
+    [events, selectedDate, view]
+  );
 
-  const handlePrevious = () => setSelectedDate(navigateDate(selectedDate, view, "previous"));
-  const handleNext = () => setSelectedDate(navigateDate(selectedDate, view, "next"));
+  const handlePrevious = () =>
+    setSelectedDate(navigateDate(selectedDate, view, "previous"));
+  const handleNext = () =>
+    setSelectedDate(navigateDate(selectedDate, view, "next"));
 
   return (
-    <div className="space-y-0.5">
+    <div className="flex items-center gap-2 space-y-0.5">
       <div className="flex items-center gap-2">
-        <span className="text-lg font-semibold">
-          {month} {year}
-        </span>
-        <Badge variant="outline" className="px-1.5">
-          {eventCount} events
-        </Badge>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Button variant="outline" className="size-6.5 px-0 [&_svg]:size-4.5" onClick={handlePrevious}>
+        <Button
+          variant="outline"
+          className="size-6.5 px-0 [&_svg]:size-4.5"
+          onClick={handlePrevious}
+        >
           <ChevronLeft />
         </Button>
 
-        <p className="text-sm text-muted-foreground">{rangeText(view, selectedDate)}</p>
+        {/* <p className="text-sm text-muted-foreground">
+          {rangeText(view, selectedDate, locale)}
+        </p> */}
 
-        <Button variant="outline" className="size-6.5 px-0 [&_svg]:size-4.5" onClick={handleNext}>
+        <Button
+          variant="outline"
+          className="size-6.5 px-0 [&_svg]:size-4.5"
+          onClick={handleNext}
+        >
           <ChevronRight />
         </Button>
       </div>
+      <span className="text-lg font-semibold">
+        {day} de {month} de {year}
+      </span>
+      <Badge variant="outline" className="px-1.5">
+        {eventCount} eventos
+      </Badge>
     </div>
   );
 }

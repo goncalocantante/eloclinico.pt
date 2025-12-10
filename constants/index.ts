@@ -15,4 +15,5 @@ export const APPOINTMENT_COLOR = [
   "yellow",
   "purple",
   "orange",
+  "gray",
 ] as const;

@@ -1,17 +1,12 @@
-"use client";
-
-import useSWR from "swr";
 import { DataTable } from "@/components/data-table/data-table";
 import { columns } from "./columns";
-import { Patient } from "@/lib/db/schema";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { AddPatientDialog } from "@/components/dialogs/add-patient-dialog";
+import { getPatients } from "@/server/actions/patients";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
-export default function PatientsPage() {
-  const { data } = useSWR<Patient[]>("/api/patients", fetcher);
+export default async function PatientsPage() {
+  const patients = await getPatients();
 
   return (
     <div className="flex flex-col w-full items-end">
@@ -21,7 +16,7 @@ export default function PatientsPage() {
           Patient
         </Button>
       </AddPatientDialog>
-      <DataTable columns={columns} data={data ?? []} />
+      <DataTable columns={columns} data={patients} />
     </div>
   );
 }

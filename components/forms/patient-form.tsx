@@ -25,14 +25,15 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { createPatient } from "@/server/actions/patients";
-import { useCalendar } from "@/calendar/contexts/calendar-context";
+import { useRouter } from "next/navigation";
+import { ChevronsUpDown } from "lucide-react";
 
 interface PatientFormProps {
   onClose?: () => void;
 }
 
 export function PatientForm({ onClose }: PatientFormProps) {
-  const { refetchPatients } = useCalendar();
+  const router = useRouter();
   // 1. Define your form.
   const form = useForm<z.infer<typeof createClientFormSchema>>({
     resolver: zodResolver(createClientFormSchema),
@@ -47,7 +48,8 @@ export function PatientForm({ onClose }: PatientFormProps) {
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof createClientFormSchema>) {
     await createPatient(values);
-    await refetchPatients();
+    // Revalidation happens in the server action, but we refresh to update any client-side caches
+    router.refresh();
     onClose?.();
     form.reset();
   }
@@ -96,9 +98,6 @@ export function PatientForm({ onClose }: PatientFormProps) {
                   {...field}
                 />
               </FormControl>
-              <FormDescription className="text-left">
-                Enter a phone number
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -119,8 +118,8 @@ export function PatientForm({ onClose }: PatientFormProps) {
                     >
                       {field.value
                         ? field.value.toLocaleDateString()
-                        : "Select date"}
-                      {/* <ChevronDownIcon /> */}
+                        : "Select date of birth"}
+                      <ChevronsUpDown className="size-4 opacity-50" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
@@ -137,9 +136,6 @@ export function PatientForm({ onClose }: PatientFormProps) {
                   />
                 </PopoverContent>
               </Popover>
-              <FormDescription className="text-left">
-                Enter the date of birth
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

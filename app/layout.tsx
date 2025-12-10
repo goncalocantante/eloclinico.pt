@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
-import { getUserWithContext, getClinicForUser } from "@/lib/db/queries/queries";
+import { getUserWithContext } from "@/lib/db/queries/queries";
 import { SWRConfig } from "swr";
 import { getAppointments } from "@/lib/db/queries/appointment-queries";
 import { getEvents } from "@/server/actions/events";
@@ -35,7 +35,6 @@ export default function RootLayout({
               // We do NOT await here
               // Only components that read this data will suspend
               "/api/user": getUserWithContext(),
-              "/api/clinic": getClinicForUser(),
               "/api/appointments": getAppointments(),
               "/api/events": getEvents(),
             },

@@ -1,17 +1,26 @@
 "use client";
 
-import { useEffect } from "react";
+import { parseISO } from "date-fns";
 import { useForm } from "react-hook-form";
-import { Check, ChevronDownIcon, ChevronsUpDown } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  ChevronDownIcon,
+  ChevronsUpDown,
+} from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import useSWR from "swr";
 
 import { useDisclosure } from "@/hooks/use-disclosure";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
+import { fetcher } from "@/lib/utils";
+import type { Patient } from "@/lib/db/schema";
 
-import { createAppointment } from "../../actions/appointments";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { TEventColor } from "@/calendar/types";
 import {
   Form,
   FormField,
@@ -51,50 +60,59 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import { eventSchema, TEventFormData } from "@/calendar/schemas";
+import { eventSchema } from "@/calendar/schemas";
+import { updateAppointment } from "../../actions/appointments";
 
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
+
+import type { IEvent } from "@/calendar/interfaces";
+import type { TEventFormData } from "@/calendar/schemas";
 
 interface IProps {
   children: React.ReactNode;
-  startDate?: Date;
-  startTime?: string | undefined;
-  endTime?: string | undefined;
+  event: IEvent;
 }
 
-export function AddEventDialog({
-  children,
-  startDate,
-  startTime,
-  endTime,
-}: IProps) {
-  const {
-    users,
-    refetchAppointments,
-    events: appointmentTypes,
-    refetchEvents,
-    patients,
-    refetchPatients,
-  } = useCalendar();
-
+export function EditAppointmentDialog({ children, event }: IProps) {
   const { isOpen, onClose, onToggle } = useDisclosure();
+
+  const { refetchAppointments, events: appointmentTypes } = useCalendar();
+
+  const { data: patients = [] } = useSWR<Patient[]>("/api/patients", fetcher);
 
   const form = useForm<TEventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
-      patientId: undefined,
-      appointmentType: appointmentTypes?.[0]?.name,
-      startDate: typeof startDate !== "undefined" ? startDate : undefined,
-      startTime: startTime ? startTime.toString() : undefined,
-      endTime: endTime ? endTime.toString() : undefined,
-      notes: "",
-      color: "blue",
+      userId: event.user.id,
+      patientId: event.patientId,
+      appointmentType: event.appointmentType as string,
+      startDate: parseISO(event.startDate),
+      startTime: `${String(parseISO(event.startDate).getHours()).padStart(
+        2,
+        "0"
+      )}:${String(parseISO(event.startDate).getMinutes()).padStart(2, "0")}`,
+      endTime: `${String(parseISO(event.endDate).getHours()).padStart(
+        2,
+        "0"
+      )}:${String(parseISO(event.endDate).getMinutes()).padStart(2, "0")}`,
+      notes: event.notes,
+      color: (event.color as TEventColor) ?? "blue",
     },
   });
 
-  const onSubmit = async (_values: TEventFormData) => {
-    await createAppointment(_values);
+  const onSubmit = async (values: TEventFormData) => {
+    console.log("Form submitted with values: ", values);
+    const patientName = patients.find(
+      (patient) => patient.id === values.patientId
+    )?.name;
+    const appointmentTypeName = appointmentTypes.find(
+      (type) => type.id === values.appointmentType
+    )?.name;
+
+    await updateAppointment(String(event.id), {
+      ...values,
+      title: appointmentTypeName + " - " + patientName,
+    });
 
     // Refetch appointments from the database after creating a new one
     await refetchAppointments();
@@ -102,22 +120,13 @@ export function AddEventDialog({
     form.reset();
   };
 
-  useEffect(() => {
-    form.reset({
-      startDate,
-      startTime,
-      endTime,
-    });
-  }, [startDate, startTime, endTime, form]);
-
   return (
     <Dialog open={isOpen} onOpenChange={onToggle}>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Book Appointment</DialogTitle>
-          <DialogDescription></DialogDescription>
+          <DialogTitle>Edit Appointment</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -387,7 +396,7 @@ export function AddEventDialog({
           </DialogClose>
 
           <Button form="event-form" type="submit">
-            Book Appointment
+            Save changes
           </Button>
         </DialogFooter>
       </DialogContent>

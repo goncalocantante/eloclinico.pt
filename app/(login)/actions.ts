@@ -95,7 +95,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     const priceId = formData.get("priceId") as string;
     return createCheckoutSession({ clinic: foundClinic, priceId });
   }
-  redirect("/dashboard");
+  redirect("/dashboard/calendar/week-view");
 });
 
 const signUpSchema = z.object({
@@ -199,13 +199,13 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     return createCheckoutSession({ clinic: createdClinic, priceId });
   }
 
-  redirect("/dashboard");
+  redirect("/dashboard/calendar/week-view");
 });
 
 export async function signOut() {
-  const user = (await getUser()) as User;
-  const userWithClinic = await getUserWithClinic(user.id);
-  await logActivity(userWithClinic?.clinicId, user.id, ActivityType.SIGN_OUT);
+  // const user = (await getUser()) as User;
+  // TODO: Log activity for sign out
+  // await logActivity(userWithClinic?.clinicId, user.id, ActivityType.SIGN_OUT);
   await auth.api.signOut({ headers: await headers() });
 }
 
