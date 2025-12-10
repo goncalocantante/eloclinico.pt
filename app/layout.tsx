@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
-import { getUserWithContext } from "@/lib/db/queries/queries";
+import { getUser } from "@/lib/db/queries/queries";
 import { SWRConfig } from "swr";
 import { getAppointments } from "@/lib/db/queries/appointment-queries";
 import { getEvents } from "@/server/actions/events";
@@ -34,7 +34,7 @@ export default function RootLayout({
             fallback: {
               // We do NOT await here
               // Only components that read this data will suspend
-              "/api/user": getUserWithContext(),
+              "/api/user": getUser(),
               "/api/appointments": getAppointments(),
               "/api/events": getEvents(),
             },

@@ -1,6 +1,6 @@
-import { getUserWithContext } from "@/lib/db/queries/queries";
+import { getUser } from "@/lib/db/queries/queries";
 
 export async function GET() {
-  const user = await getUserWithContext();
+  const user = await getUser();
   return Response.json(user);
 }

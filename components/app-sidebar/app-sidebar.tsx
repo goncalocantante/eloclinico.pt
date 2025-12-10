@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { fetcher } from "@/lib/utils";
 import useSWR from "swr";
-import { UserContext } from "@/lib/db/schema";
+import { User } from "@/lib/db/schema";
 import Logo from "@/components/logo";
 
 // This is sample data.
@@ -36,7 +36,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: user } = useSWR<UserContext>("/api/user", fetcher);
+  const { data: user } = useSWR<User>("/api/user", fetcher);
 
   if (!user) {
     return null;

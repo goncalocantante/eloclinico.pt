@@ -1,14 +1,6 @@
 import { stripe } from "../payments/stripe";
 import { db } from "./drizzle";
-import {
-  users,
-  clinics,
-  clinicMembers,
-  patients,
-  Patient,
-  accounts,
-} from "./schema";
-import { hashPassword } from "@/lib/auth/session";
+import { users, patients, Patient } from "./schema";
 import { faker } from "@faker-js/faker";
 import { unique } from "@dpaskhin/unique";
 
@@ -68,49 +60,11 @@ async function createInitialPatients() {
 }
 
 async function seed() {
-  const email = "test@test.com";
-  const password = "admin123";
-  const passwordHash = await hashPassword(password);
-  const userId = crypto.randomUUID();
-
-  await db.transaction(async (tx: any) => {
-    const [user] = await tx
-      .insert(users)
-      .values({
-        id: userId,
-        email,
-        name: "Test Owner",
-        role: "owner",
-      })
-      .returning();
-
-    await tx.insert(accounts).values({
-      id: crypto.randomUUID(),
-      userId,
-      providerId: "email",
-      accountId: email,
-      password: passwordHash,
-    });
-  });
-
-  console.log("Initial user created.");
-
-  const [clinic] = await db
-    .insert(clinics)
-    .values({
-      name: "Test Clinic",
-    })
-    .returning();
-
-  await db.insert(clinicMembers).values({
-    clinicId: clinic.id,
-    userId: userId,
-    role: "owner",
-  });
-
   await createInitialPatients();
-
   await createStripeProducts();
+  console.log(
+    "Seed completed. Note: Users are created via Google OAuth sign-in."
+  );
 }
 
 seed()

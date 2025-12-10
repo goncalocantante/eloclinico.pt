@@ -1,6 +1,5 @@
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
-import { organization } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/lib/db/drizzle";
 
@@ -10,9 +9,6 @@ export const auth = betterAuth({
     provider: "pg",
     usePlural: true,
   }),
-  emailAndPassword: {
-    enabled: true,
-  },
   socialProviders: {
     google: {
       prompt: "select_account",
@@ -39,5 +35,5 @@ export const auth = betterAuth({
       },
     },
   },
-  plugins: [nextCookies(), organization()],
+  plugins: [nextCookies()],
 });

@@ -15,6 +15,13 @@
       "when": 1765222357198,
       "tag": "0001_clean_iron_fist",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1765388734981,
+      "tag": "0002_glamorous_klaw",
+      "breakpoints": true
     }
   ]
 }

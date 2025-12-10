@@ -1,7 +1,6 @@
 import { z } from "zod";
-import { ClinicDataWithMembers, User } from "@/lib/db/schema";
-import { getClinicForUser, getUser } from "@/lib/db/queries/queries";
-import { redirect } from "next/navigation";
+import { User } from "@/lib/db/schema";
+import { getUser } from "@/lib/db/queries/queries";
 
 export type ActionState = {
   error?: string;
@@ -50,26 +49,5 @@ export function validatedActionWithUser<S extends z.ZodType<any, any>, T>(
     }
 
     return action(result.data, formData, user);
-  };
-}
-
-type ActionWithClinicFunction<T> = (
-  formData: FormData,
-  clinic: ClinicDataWithMembers
-) => Promise<T>;
-
-export function withClinic<T>(action: ActionWithClinicFunction<T>) {
-  return async (formData: FormData): Promise<T> => {
-    const user = await getUser();
-    if (!user) {
-      redirect("/sign-in");
-    }
-
-    const clinic = await getClinicForUser();
-    if (!clinic) {
-      throw new Error("Clinic not found");
-    }
-
-    return action(formData, clinic);
   };
 }
