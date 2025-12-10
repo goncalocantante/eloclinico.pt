@@ -133,7 +133,8 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
                             >
                               <AddAppointmentDialog
                                 startDate={day}
-                                startTime={{ hour, minute: 0 }}
+                                startTime={`${hour}:00`}
+                                endTime={`${hour}:00`}
                               >
                                 <div className="absolute inset-x-0 top-0 h-[24px] cursor-pointer transition-colors hover:bg-accent" />
                               </AddAppointmentDialog>
@@ -146,7 +147,8 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
                             >
                               <AddAppointmentDialog
                                 startDate={day}
-                                startTime={{ hour, minute: 15 }}
+                                startTime={`${hour}:15`}
+                                endTime={`${hour}:30`}
                               >
                                 <div className="absolute inset-x-0 top-[24px] h-[24px] cursor-pointer transition-colors hover:bg-accent" />
                               </AddAppointmentDialog>
@@ -161,7 +163,8 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
                             >
                               <AddAppointmentDialog
                                 startDate={day}
-                                startTime={{ hour, minute: 30 }}
+                                startTime={`${hour}:30`}
+                                endTime={`${hour}:45`}
                               >
                                 <div className="absolute inset-x-0 top-[48px] h-[24px] cursor-pointer transition-colors hover:bg-accent" />
                               </AddAppointmentDialog>
@@ -174,7 +177,8 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
                             >
                               <AddAppointmentDialog
                                 startDate={day}
-                                startTime={{ hour, minute: 45 }}
+                                startTime={`${hour}:45`}
+                                endTime={`${hour}:00`}
                               >
                                 <div className="absolute inset-x-0 top-[72px] h-[24px] cursor-pointer transition-colors hover:bg-accent" />
                               </AddAppointmentDialog>

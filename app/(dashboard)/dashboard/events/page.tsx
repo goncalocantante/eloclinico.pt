@@ -16,7 +16,7 @@ export default async function EventsPage() {
     redirect("/sign-in");
   }
 
-  const events = await getEvents(session.user.id);
+  const events = await getEvents();
 
   return (
     <section className="flex flex-col items-center gap-16 animate-fade-in">

@@ -4,7 +4,7 @@ import { parseISO, areIntervalsOverlapping, format } from "date-fns";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { SingleCalendar } from "@/components/ui/single-calendar";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 import { AddAppointmentDialog } from "@/calendar/components/dialogs/add-appointment-dialog";
 import { EventBlock } from "@/calendar/components/week-and-day-view/event-block";
@@ -29,8 +29,14 @@ interface IProps {
 }
 
 export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
-  const { selectedDate, setSelectedDate, users, visibleHours, workingHours, locale } =
-    useCalendar();
+  const {
+    selectedDate,
+    setSelectedDate,
+    users,
+    visibleHours,
+    workingHours,
+    locale,
+  } = useCalendar();
 
   const { hours, earliestEventHour, latestEventHour } = getVisibleHours(
     visibleHours,
@@ -224,7 +230,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
       </div>
 
       <div className="hidden w-64 divide-y border-l md:block">
-        <SingleCalendar
+        <CalendarComponent
           className="mx-auto w-fit"
           mode="single"
           selected={selectedDate}

@@ -5,14 +5,14 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-if (!process.env.POSTGRES_URL) {
-  throw new Error("POSTGRES_URL environment variable is not set");
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL environment variable is not set");
 }
 
 // Configure connection pooling to prevent "too many clients" error
 // In Next.js, we need to limit connections per instance
 const maxConnections = 10; // Limit connections per instance
-const connectionString = process.env.POSTGRES_URL;
+const connectionString = process.env.DATABASE_URL;
 
 // Singleton pattern to ensure only one client instance is created
 // This prevents multiple clients from being created during hot reloading
@@ -31,11 +31,13 @@ const client =
         max: maxConnections,
         idle_timeout: 20,
         connect_timeout: 10,
+        prepare: false,
       }))
     : (global.__postgresClient ??= postgres(connectionString, {
         max: maxConnections,
         idle_timeout: 20,
         connect_timeout: 10,
+        prepare: false,
       }));
 
 export { client };

@@ -22,15 +22,6 @@
   - Payments for sessions:
     - `appointment_payments`: `id`, `clinicId`, `patientId`, `appointmentId`, `stripe_payment_intent_id`, `amount`, `currency`, `status`.
 
-- Subscription/billing
-  - Clinic subscription stays on `clinics` (already in template via `stripe_*` fields).
-  - Tiering by active patients:
-    - Simple gate in-app: if `planName === 'free'` and `activePatients >= 5`, block creating a new patient and prompt upgrade.
-    - Or Stripe metered billing: create a metered price; at period end, report usage = active patient count (or newly added patients). This scales better for multiple tiers.
-  - Session payments (patients paying for appointments): separate Stripe flows from the clinic subscription.
-    - Easiest: Stripe Checkout per appointment creating a Customer for the patient; record `payment_intent_id` on success.
-    - If you want clinic payouts, consider Stripe Connect later. Start simple: charge to your platform, then reconcile.
-
 ### How this fits your two cases
 
 - Independent psychologist

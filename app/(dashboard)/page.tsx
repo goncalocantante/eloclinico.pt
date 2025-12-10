@@ -1,6 +1,6 @@
-import { Button } from '@/components/ui/button';
-import { ArrowRight, CreditCard, Database } from 'lucide-react';
-import { Terminal } from './terminal';
+import { Button } from "@/components/ui/button";
+import { ArrowRight, CreditCard, Database } from "lucide-react";
+import { Terminal } from "./terminal";
 
 export default function HomePage() {
   return (
@@ -75,21 +75,6 @@ export default function HomePage() {
                 <p className="mt-2 text-base text-gray-500">
                   Robust database solution with an intuitive ORM for efficient
                   data management and scalability.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-10 lg:mt-0">
-              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-orange-500 text-white">
-                <CreditCard className="h-6 w-6" />
-              </div>
-              <div className="mt-5">
-                <h2 className="text-lg font-medium text-gray-900">
-                  Stripe Integration
-                </h2>
-                <p className="mt-2 text-base text-gray-500">
-                  Seamless payment processing and subscription management with
-                  industry-leading Stripe integration.
                 </p>
               </div>
             </div>

@@ -1,7 +1,7 @@
 "use client";
 import { eventFormSchema } from "./schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, Resolver } from "react-hook-form";
 import { z } from "zod";
 import {
   Form,
@@ -56,8 +56,15 @@ export default function EventForm({
   const [isDeletePending, startDeleteTransition] = useTransition();
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof eventFormSchema>>({
-    resolver: zodResolver(eventFormSchema), // Validate with Zod schema
+  type EventFormValues = {
+    name: string;
+    isActive: boolean;
+    durationInMinutes: number;
+    description?: string;
+  };
+
+  const form = useForm<EventFormValues>({
+    resolver: zodResolver(eventFormSchema) as Resolver<EventFormValues>, // Validate with Zod schema
     defaultValues: event
       ? {
           // If `event` is provided (edit mode), spread its existing properties as default values
@@ -73,7 +80,7 @@ export default function EventForm({
   });
 
   // Handle form submission
-  async function onSubmit(values: z.infer<typeof eventFormSchema>) {
+  async function onSubmit(values: EventFormValues) {
     const action =
       event == null ? createEvent : updateEvent.bind(null, event.id);
     try {
