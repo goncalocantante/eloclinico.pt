@@ -1,4 +1,4 @@
-import EventCard from "@/components/ui/event-card";
+import EventCard from "@/components/event-card";
 import { Button } from "@/components/ui/button";
 import { getEvents } from "@/server/actions/events";
 import { CalendarPlus, CalendarRange } from "lucide-react";

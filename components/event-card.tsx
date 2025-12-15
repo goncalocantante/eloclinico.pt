@@ -6,9 +6,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../ui/card";
+} from "./ui/card";
 // import { formatEventDescription } from "@/lib/formatters";
-import { Button } from "../ui/button";
+import { Button } from "./ui/button";
 import Link from "next/link";
 // import { CopyEventButton } from "../CopyEventButton";
 
