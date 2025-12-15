@@ -23,8 +23,11 @@ async function getOAuthClient(betterAuthUserId: string) {
       throw new Error("No OAuth data or token found for the user.");
     }
 
-    // Initialize OAuth2 client with Google credentials
-    const oAuthClient = new google.auth.OAuth2();
+    // Initialize OAuth2 client with Google credentials (client ID and secret are required)
+    const oAuthClient = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET
+    );
 
     // Set the credentials with the obtained access token
     oAuthClient.setCredentials({ access_token: data.accessToken });

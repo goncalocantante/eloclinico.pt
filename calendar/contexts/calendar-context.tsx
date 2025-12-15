@@ -16,6 +16,13 @@ import { type Event } from "@/lib/db/schema";
 import { authClient } from "@/lib/auth/client";
 import { fetcher } from "@/lib/utils";
 
+interface IAddAppointmentDialogState {
+  patientId?: string;
+  startDate?: Date;
+  startTime?: string;
+  endTime?: string;
+}
+
 interface ICalendarContext {
   selectedDate: Date;
   setSelectedDate: (date: Date | undefined) => void;
@@ -34,6 +41,11 @@ interface ICalendarContext {
   refetchAppointments: () => Promise<IEvent[] | undefined>;
   locale: Locale;
   setLocale: (locale: Locale) => void;
+  // Add Appointment Dialog state
+  isAddAppointmentDialogOpen: boolean;
+  addAppointmentDialogState: IAddAppointmentDialogState;
+  openAddAppointmentDialog: (state?: IAddAppointmentDialogState) => void;
+  closeAddAppointmentDialog: () => void;
 }
 
 const CalendarContext = createContext({} as ICalendarContext);
@@ -65,6 +77,22 @@ export function CalendarProvider({
   const [locale, setLocale] = useState<Locale>(pt);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // Add Appointment Dialog state
+  const [isAddAppointmentDialogOpen, setIsAddAppointmentDialogOpen] =
+    useState(false);
+  const [addAppointmentDialogState, setAddAppointmentDialogState] =
+    useState<IAddAppointmentDialogState>({});
+
+  const openAddAppointmentDialog = (state?: IAddAppointmentDialogState) => {
+    setAddAppointmentDialogState(state || {});
+    setIsAddAppointmentDialogOpen(true);
+  };
+
+  const closeAddAppointmentDialog = () => {
+    setIsAddAppointmentDialogOpen(false);
+    setAddAppointmentDialogState({});
+  };
 
   const {
     data: session,
@@ -115,6 +143,10 @@ export function CalendarProvider({
         refetchEvents,
         locale,
         setLocale,
+        isAddAppointmentDialogOpen,
+        addAppointmentDialogState,
+        openAddAppointmentDialog,
+        closeAddAppointmentDialog,
       }}
     >
       {children}

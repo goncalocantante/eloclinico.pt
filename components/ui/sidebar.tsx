@@ -40,7 +40,6 @@ type SidebarContextProps = {
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
   toggleSidebar: () => void
-  disableToggle?: boolean
 }
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null)
@@ -58,7 +57,6 @@ function SidebarProvider({
   defaultOpen = true,
   open: openProp,
   onOpenChange: setOpenProp,
-  disableToggle = false,
   className,
   style,
   children,
@@ -67,7 +65,6 @@ function SidebarProvider({
   defaultOpen?: boolean
   open?: boolean
   onOpenChange?: (open: boolean) => void
-  disableToggle?: boolean
 }) {
   const isMobile = useIsMobile()
   const [openMobile, setOpenMobile] = React.useState(false)
@@ -93,14 +90,11 @@ function SidebarProvider({
 
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(() => {
-    if (disableToggle) return
     return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
-  }, [isMobile, setOpen, setOpenMobile, disableToggle])
+  }, [isMobile, setOpen, setOpenMobile])
 
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
-    if (disableToggle) return
-    
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
         event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
@@ -113,7 +107,7 @@ function SidebarProvider({
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [toggleSidebar, disableToggle])
+  }, [toggleSidebar])
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
   // This makes it easier to style the sidebar with Tailwind classes.
@@ -128,9 +122,8 @@ function SidebarProvider({
       openMobile,
       setOpenMobile,
       toggleSidebar,
-      disableToggle,
     }),
-    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, disableToggle]
+    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
   )
 
   return (
@@ -265,11 +258,7 @@ function SidebarTrigger({
   onClick,
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar, disableToggle } = useSidebar()
-
-  if (disableToggle) {
-    return null
-  }
+  const { toggleSidebar } = useSidebar()
 
   return (
     <Button
@@ -291,11 +280,7 @@ function SidebarTrigger({
 }
 
 function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
-  const { toggleSidebar, disableToggle } = useSidebar()
-
-  if (disableToggle) {
-    return null
-  }
+  const { toggleSidebar } = useSidebar()
 
   return (
     <button

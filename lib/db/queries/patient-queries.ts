@@ -1,6 +1,7 @@
 import { getUser } from "./queries";
 import { db } from "../drizzle";
 import { patients } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function getPatients() {
   const user = await getUser();
@@ -8,9 +9,10 @@ export async function getPatients() {
     throw new Error("User not authenticated");
   }
 
-  // todo - at the moment its returning all patients for the database,
-  // eventually has to return patients for a specific psychologist
-  const patientsRes = await db.select().from(patients);
+  const patientsRes = await db
+    .select()
+    .from(patients)
+    .where(eq(patients.userId, user.id));
 
   return patientsRes;
 }

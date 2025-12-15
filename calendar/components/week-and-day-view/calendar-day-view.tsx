@@ -6,7 +6,6 @@ import { useCalendar } from "@/calendar/contexts/calendar-context";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
-import { AddAppointmentDialog } from "@/calendar/components/dialogs/add-appointment-dialog";
 import { EventBlock } from "@/calendar/components/week-and-day-view/event-block";
 import { DroppableTimeBlock } from "@/calendar/components/dnd/droppable-time-block";
 import { CalendarTimeline } from "@/calendar/components/week-and-day-view/calendar-time-line";
@@ -36,6 +35,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
     visibleHours,
     workingHours,
     locale,
+    openAddAppointmentDialog,
   } = useCalendar();
 
   const { hours, earliestEventHour, latestEventHour } = getVisibleHours(
@@ -122,13 +122,16 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                         hour={hour}
                         minute={0}
                       >
-                        <AddAppointmentDialog
-                          startDate={selectedDate}
-                          startTime={`${hour}:00`}
-                          endTime={`${hour}:00`}
-                        >
-                          <div className="absolute inset-x-0 top-0 h-[24px] cursor-pointer transition-colors hover:bg-accent" />
-                        </AddAppointmentDialog>
+                        <div
+                          className="absolute inset-x-0 top-0 h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                          onClick={() =>
+                            openAddAppointmentDialog({
+                              startDate: selectedDate,
+                              startTime: `${hour}:00`,
+                              endTime: `${hour}:00`,
+                            })
+                          }
+                        />
                       </DroppableTimeBlock>
 
                       <DroppableTimeBlock
@@ -136,13 +139,16 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                         hour={hour}
                         minute={15}
                       >
-                        <AddAppointmentDialog
-                          startDate={selectedDate}
-                          startTime={`${hour}:15`}
-                          endTime={`${hour}:30`}
-                        >
-                          <div className="absolute inset-x-0 top-[24px] h-[24px] cursor-pointer transition-colors hover:bg-accent" />
-                        </AddAppointmentDialog>
+                        <div
+                          className="absolute inset-x-0 top-[24px] h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                          onClick={() =>
+                            openAddAppointmentDialog({
+                              startDate: selectedDate,
+                              startTime: `${hour}:15`,
+                              endTime: `${hour}:30`,
+                            })
+                          }
+                        />
                       </DroppableTimeBlock>
 
                       <div className="pointer-events-none absolute inset-x-0 top-1/2 border-b border-dashed"></div>
@@ -152,13 +158,16 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                         hour={hour}
                         minute={30}
                       >
-                        <AddAppointmentDialog
-                          startDate={selectedDate}
-                          startTime={`${hour}:30`}
-                          endTime={`${hour}:45`}
-                        >
-                          <div className="absolute inset-x-0 top-[48px] h-[24px] cursor-pointer transition-colors hover:bg-accent" />
-                        </AddAppointmentDialog>
+                        <div
+                          className="absolute inset-x-0 top-[48px] h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                          onClick={() =>
+                            openAddAppointmentDialog({
+                              startDate: selectedDate,
+                              startTime: `${hour}:30`,
+                              endTime: `${hour}:45`,
+                            })
+                          }
+                        />
                       </DroppableTimeBlock>
 
                       <DroppableTimeBlock
@@ -166,13 +175,16 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                         hour={hour}
                         minute={45}
                       >
-                        <AddAppointmentDialog
-                          startDate={selectedDate}
-                          startTime={`${hour}:45`}
-                          endTime={`${hour}:00`}
-                        >
-                          <div className="absolute inset-x-0 top-[72px] h-[24px] cursor-pointer transition-colors hover:bg-accent" />
-                        </AddAppointmentDialog>
+                        <div
+                          className="absolute inset-x-0 top-[72px] h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                          onClick={() =>
+                            openAddAppointmentDialog({
+                              startDate: selectedDate,
+                              startTime: `${hour}:45`,
+                              endTime: `${hour + 1}:00`,
+                            })
+                          }
+                        />
                       </DroppableTimeBlock>
                     </div>
                   );

@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Columns,
@@ -13,7 +15,7 @@ import { Button } from "@/components/ui/button";
 // import { UserSelect } from "@/calendar/components/header/user-select";
 import { TodayButton } from "@/calendar/components/header/today-button";
 import { DateNavigator } from "@/calendar/components/header/date-navigator";
-import { AddAppointmentDialog } from "@/calendar/components/dialogs/add-appointment-dialog";
+import { useCalendar } from "@/calendar/contexts/calendar-context";
 
 import type { IEvent } from "@/calendar/interfaces";
 import type { TCalendarView } from "@/calendar/types";
@@ -24,6 +26,8 @@ interface IProps {
 }
 
 export function CalendarHeader({ view, events }: IProps) {
+  const { openAddAppointmentDialog } = useCalendar();
+
   return (
     <div className="flex flex-col gap-4 border-b p-4 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex items-center gap-3">
@@ -98,11 +102,12 @@ export function CalendarHeader({ view, events }: IProps) {
           {/* <UserSelect /> */}
         </div>
 
-        <AddAppointmentDialog>
-          <Button className="w-full sm:w-auto">
-            <Plus />
-          </Button>
-        </AddAppointmentDialog>
+        <Button
+          className="w-full sm:w-auto"
+          onClick={() => openAddAppointmentDialog()}
+        >
+          <Plus />
+        </Button>
       </div>
     </div>
   );

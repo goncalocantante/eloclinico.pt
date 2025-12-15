@@ -6,7 +6,6 @@ import { Check, ChevronDownIcon, ChevronsUpDown } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useSWR from "swr";
 
-import { useDisclosure } from "@/hooks/use-disclosure";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 import { fetcher } from "@/lib/utils";
 import type { Patient } from "@/lib/db/schema";
@@ -60,33 +59,29 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
 interface IProps {
-  children: React.ReactNode;
-  startDate?: Date;
-  startTime?: string | undefined;
-  endTime?: string | undefined;
+  children?: React.ReactNode;
 }
 
-export function AddAppointmentDialog({
-  children,
-  startDate,
-  startTime,
-  endTime,
-}: IProps) {
-  const { refetchAppointments, events: appointmentTypes } = useCalendar();
+export function AddAppointmentDialog({ children }: IProps) {
+  const {
+    refetchAppointments,
+    events: appointmentTypes,
+    isAddAppointmentDialogOpen,
+    addAppointmentDialogState,
+    closeAddAppointmentDialog,
+  } = useCalendar();
 
   // Fetch patients directly in this component since they're only used here
   const { data: patients = [] } = useSWR<Patient[]>("/api/patients", fetcher);
-
-  const { isOpen, onClose, onToggle } = useDisclosure();
 
   const form = useForm<TEventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
       patientId: undefined,
       appointmentType: appointmentTypes?.[0]?.name,
-      startDate: typeof startDate !== "undefined" ? startDate : undefined,
-      startTime: startTime ? startTime.toString() : undefined,
-      endTime: endTime ? endTime.toString() : undefined,
+      startDate: undefined,
+      startTime: undefined,
+      endTime: undefined,
       notes: "",
       color: "blue",
     },
@@ -109,21 +104,40 @@ export function AddAppointmentDialog({
 
     // Refetch appointments from the database after creating a new one
     await refetchAppointments();
-    onClose();
+    closeAddAppointmentDialog();
     form.reset();
   };
 
+  // Update form when dialog state changes
   useEffect(() => {
-    form.reset({
-      startDate,
-      startTime,
-      endTime,
-    });
-  }, [startDate, startTime, endTime, form]);
+    if (isAddAppointmentDialogOpen) {
+      form.reset({
+        patientId: addAppointmentDialogState.patientId || undefined,
+        appointmentType: appointmentTypes?.[0]?.name,
+        startDate: addAppointmentDialogState.startDate || undefined,
+        startTime: addAppointmentDialogState.startTime || undefined,
+        endTime: addAppointmentDialogState.endTime || undefined,
+        notes: "",
+        color: "blue",
+      });
+    }
+  }, [
+    isAddAppointmentDialogOpen,
+    addAppointmentDialogState,
+    appointmentTypes,
+    form,
+  ]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onToggle}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+    <Dialog
+      open={isAddAppointmentDialogOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          closeAddAppointmentDialog();
+        }
+      }}
+    >
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
 
       <DialogContent>
         <DialogHeader>

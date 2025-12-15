@@ -65,6 +65,9 @@ export const accounts = pgTable("accounts", {
 
 export const patients = pgTable("patients", {
   id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" }) // Deletes patients if user is deleted
+    .notNull(),
   name: varchar("name", { length: 100 }),
   email: varchar("email", { length: 255 }).notNull().unique(),
   phone: varchar("phone", { length: 16 }),

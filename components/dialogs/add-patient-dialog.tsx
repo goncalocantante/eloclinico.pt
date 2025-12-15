@@ -33,7 +33,7 @@ export function AddPatientDialog({ children }: IProps) {
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New Patient</DialogTitle>
+          <DialogTitle>Novo Paciente</DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
 
@@ -42,11 +42,11 @@ export function AddPatientDialog({ children }: IProps) {
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="outline">
-              Cancel
+              Cancelar
             </Button>
           </DialogClose>
           <Button form="patient-form" type="submit">
-            Create Patient
+            Criar Paciente
           </Button>
         </DialogFooter>
       </DialogContent>

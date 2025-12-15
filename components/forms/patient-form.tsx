@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { createPatient } from "@/server/actions/patients";
 import { useRouter } from "next/navigation";
 import { ChevronsUpDown } from "lucide-react";
+import { toast } from "sonner";
 
 interface PatientFormProps {
   onClose?: () => void;
@@ -47,11 +48,17 @@ export function PatientForm({ onClose }: PatientFormProps) {
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof createClientFormSchema>) {
-    await createPatient(values);
-    // Revalidation happens in the server action, but we refresh to update any client-side caches
-    router.refresh();
-    onClose?.();
-    form.reset();
+    const result = await createPatient(values);
+    
+    if (result.success) {
+      // Revalidation happens in the server action, but we refresh to update any client-side caches
+      router.refresh();
+      onClose?.();
+      form.reset();
+      toast.success("Paciente criado com sucesso");
+    } else {
+      toast.error(result.error);
+    }
   }
 
   return (

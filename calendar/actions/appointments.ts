@@ -4,10 +4,11 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/drizzle";
 
 import { eventSchema } from "@/calendar/schemas";
-import { appointments } from "@/lib/db/schema";
+import { appointments, patients } from "@/lib/db/schema";
 import { getUser } from "@/lib/db/queries/queries";
 import { getSchedule } from "@/server/actions/schedule";
 import { getPublicEvents } from "@/server/actions/events";
+import { createCalendarEvent } from "@/server/google/googleCalendar";
 
 export const createAppointment = async (data: any) => {
   const user = await getUser();
@@ -31,8 +32,8 @@ export const createAppointment = async (data: any) => {
   if (events.length === 0) {
     throw new Error("No active events found for user");
   }
-  const eventId = events.find((event) => event.id === data.appointmentType)?.id;
-  if (!eventId) {
+  const event = events.find((event) => event.id === data.appointmentType);
+  if (!event || !event.id) {
     throw new Error("Event not found");
   }
 
@@ -57,11 +58,28 @@ export const createAppointment = async (data: any) => {
     notes: data.notes || null,
     color: data.color,
     scheduleId: schedule.id,
-    eventId: eventId,
+    eventId: event.id,
   };
 
   const res = await db.insert(appointments).values(dbData).returning();
 
+  const patient = await db.query.patients.findFirst({
+    where: eq(patients.id, data.patientId),
+  });
+
+  if (!patient) {
+    throw new Error("Patient not found");
+  }
+
+  // create event in google calendar
+  await createCalendarEvent({
+    userId: user.id,
+    guestName: patient.name || "",
+    guestEmail: patient.email || "",
+    startTime: startDateTime,
+    durationInMinutes: event.durationInMinutes || 0,
+    eventName: data.title || "",
+  });
   return res;
 };
 

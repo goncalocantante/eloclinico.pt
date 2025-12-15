@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { SquareTerminal, Calendar, Sprout } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 import { NavMain } from "@/components/app-sidebar/nav-main";
 import { NavUser } from "@/components/app-sidebar/nav-user";
@@ -17,26 +18,29 @@ import useSWR from "swr";
 import { User } from "@/lib/db/schema";
 import Logo from "@/components/logo";
 
-// This is sample data.
-const data = {
-  navMain: [
-    {
-      title: "Agenda",
-      url: "/dashboard/calendar/week-view",
-      icon: Calendar,
-      isActive: true,
-    },
-    {
-      title: "Pacientes",
-      url: "/dashboard/patients",
-      icon: SquareTerminal,
-      isActive: true,
-    },
-  ],
-};
+// Navigation items configuration (without isActive - it's calculated dynamically)
+const navItems = [
+  {
+    title: "Agenda",
+    url: "/dashboard/calendar/week-view",
+    icon: Calendar,
+  },
+  {
+    title: "Pacientes",
+    url: "/dashboard/patients",
+    icon: SquareTerminal,
+  },
+];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: user } = useSWR<User>("/api/user", fetcher);
+  const pathname = usePathname();
+
+  // Dynamically calculate isActive based on current pathname
+  const navMain = navItems.map((item) => ({
+    ...item,
+    isActive: pathname === item.url || pathname.startsWith(item.url + "/"),
+  }));
 
   if (!user) {
     return null;
@@ -48,7 +52,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <Logo />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMain} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser

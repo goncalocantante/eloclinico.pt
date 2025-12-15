@@ -1,0 +1,2 @@
+ALTER TABLE "patients" ADD COLUMN "user_id" uuid;
+ALTER TABLE "patients" ADD CONSTRAINT "patients_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;

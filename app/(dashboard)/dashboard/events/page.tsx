@@ -44,7 +44,11 @@ export default async function EventsPage() {
       {events.length > 0 ? (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 p-10">
           {events.map((event: any) => (
-            <EventCard key={event.id} {...event} />
+            <EventCard
+              key={event.id}
+              {...event}
+              betterAuthUserId={session.user.id}
+            />
           ))}
         </div>
       ) : (
