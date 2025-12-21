@@ -293,14 +293,14 @@ export default function MeetingForm({
             asChild
             variant="outline"
           >
-            <Link href={`/book/${userId}`}>Cancel</Link>
+            <Link href={`/book/${userId}`}>Cancelar</Link>
           </Button>
           <Button
             className="cursor-pointer hover:scale-105 bg-blue-400 hover:bg-blue-600"
             disabled={form.formState.isSubmitting}
             type="submit"
           >
-            Book Event
+            Agendar Evento
           </Button>
         </div>
       </form>

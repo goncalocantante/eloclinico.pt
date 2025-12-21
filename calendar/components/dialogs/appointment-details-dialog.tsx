@@ -2,6 +2,7 @@
 
 import { format, parseISO } from "date-fns";
 import { Calendar, Clock, Text, User } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { EditAppointmentDialog } from "@/calendar/components/dialogs/edit-appointment-dialog";
@@ -13,6 +14,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useConfirm } from "@/contexts/confirm-action-context";
+import { useCalendar } from "@/calendar/contexts/calendar-context";
+import { deleteAppointment } from "@/calendar/actions/appointments";
+import { useDisclosure } from "@/hooks/use-disclosure";
 
 import type { IEvent } from "@/calendar/interfaces";
 
@@ -24,13 +29,40 @@ interface IProps {
 export function EventDetailsDialog({ event, children }: IProps) {
   const startDate = parseISO(event.startDate);
   const endDate = parseISO(event.endDate);
+  const confirm = useConfirm();
+  const { refetchAppointments } = useCalendar();
+  const { isOpen, onClose, onToggle } = useDisclosure();
+
+  const handleDelete = async () => {
+    const result = await confirm({
+      title: "Cancelar Consulta",
+      description:
+        "Tem a certeza que deseja cancelar esta consulta? Esta ação é irreversível.",
+    });
+
+    if (result) {
+      try {
+        const deleteResult = await deleteAppointment(String(event.id));
+
+        if (deleteResult.success) {
+          toast.success("Consulta cancelada com sucesso");
+          await refetchAppointments();
+          onClose();
+        } else {
+          toast.error(deleteResult.error || "Erro ao cancelar consulta");
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Erro ao cancelar consulta");
+      }
+    }
+  };
 
   return (
     <>
-      <Dialog>
+      <Dialog open={isOpen} onOpenChange={onToggle}>
         <DialogTrigger asChild>{children}</DialogTrigger>
 
-        <DialogContent>
+        <DialogContent showDeleteButton={true} onDelete={handleDelete}>
           <DialogHeader>
             <DialogTitle>{event.title}</DialogTitle>
             <EditAppointmentDialog event={event}>
