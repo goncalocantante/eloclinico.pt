@@ -49,7 +49,7 @@ export function PatientForm({ onClose }: PatientFormProps) {
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof createClientFormSchema>) {
     const result = await createPatient(values);
-    
+
     if (result.success) {
       // Revalidation happens in the server action, but we refresh to update any client-side caches
       router.refresh();
@@ -73,7 +73,7 @@ export function PatientForm({ onClose }: PatientFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>Nome</FormLabel>
               <FormControl>
                 <Input placeholder="Patient Name" {...field} />
               </FormControl>
@@ -100,7 +100,7 @@ export function PatientForm({ onClose }: PatientFormProps) {
               <FormLabel className="text-left">Phone Number</FormLabel>
               <FormControl className="w-full">
                 <PhoneInput
-                  placeholder="Enter a phone number"
+                  placeholder="Número de telefone"
                   defaultCountry="PT"
                   {...field}
                 />
@@ -114,7 +114,7 @@ export function PatientForm({ onClose }: PatientFormProps) {
           name="birthdate"
           render={({ field }) => (
             <FormItem className="flex flex-col items-start">
-              <FormLabel className="text-left">Date of birth</FormLabel>
+              <FormLabel className="text-left">Data de Nascimento</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl className="w-full">
@@ -125,7 +125,7 @@ export function PatientForm({ onClose }: PatientFormProps) {
                     >
                       {field.value
                         ? field.value.toLocaleDateString()
-                        : "Select date of birth"}
+                        : "Selecionar data"}
                       <ChevronsUpDown className="size-4 opacity-50" />
                     </Button>
                   </FormControl>

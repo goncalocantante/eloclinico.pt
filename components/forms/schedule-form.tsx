@@ -75,15 +75,11 @@ export function ScheduleForm({
   async function onSubmit(values: z.infer<typeof scheduleFormSchema>) {
     try {
       await saveSchedule(values);
-      toast("Schedule saved successfully.", {
-        duration: 5000,
-        className:
-          "!rounded-3xl !py-8 !px-5 !justify-center !text-green-400 !font-black",
-      });
+      toast.success("Disponibilidade guardada com sucesso");
     } catch (error: any) {
       // Handle any unexpected errors that occur during the schedule saving process
       form.setError("root", {
-        message: `There was an error saving your schedule${error.message}`,
+        message: `Houve um erro ao guardar a sua disponibilidade: ${error.message}`,
       });
     }
   }

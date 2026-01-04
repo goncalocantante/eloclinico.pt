@@ -10,12 +10,15 @@ export default async function PatientsPage() {
 
   return (
     <div className="flex flex-col w-full items-end">
-      <AddPatientDialog>
-        <Button className="w-full sm:w-auto">
-          <Plus />
-          Patient
-        </Button>
-      </AddPatientDialog>
+      <div className="flex justify-between items-center w-full mb-4">
+        <h1 className="text-2xl font-bold">Pacientes</h1>
+        <AddPatientDialog>
+          <Button className="w-full sm:w-auto">
+            <Plus />
+            Novo Paciente
+          </Button>
+        </AddPatientDialog>
+      </div>
       <DataTable columns={columns} data={patients} />
     </div>
   );

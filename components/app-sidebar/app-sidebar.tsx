@@ -24,6 +24,16 @@ const navItems = [
     title: "Agenda",
     url: "/dashboard/calendar/week-view",
     icon: Calendar,
+    subItems: [
+      {
+        title: "Disponibilidade",
+        url: "/dashboard/calendar/availability",
+      },
+      {
+        title: "Eventos",
+        url: "/dashboard/events",
+      },
+    ],
   },
   {
     title: "Pacientes",

@@ -100,7 +100,7 @@ export async function saveSchedule(
     throw new Error(`Failed to save schedule: ${error.message || error}`);
   } finally {
     // Revalidate the /schedule path to update the cache and reflect the new data
-    revalidatePath("/schedule");
+    revalidatePath("/dashboard/calendar/availability");
   }
 }
 
