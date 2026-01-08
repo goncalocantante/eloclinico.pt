@@ -61,7 +61,7 @@ export function DateNavigator({ view, events }: IProps) {
         {day} de {month} de {year}
       </span>
       <Badge variant="outline" className="px-1.5">
-        {eventCount} eventos
+        {eventCount} consultas
       </Badge>
     </div>
   );

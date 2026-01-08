@@ -16,6 +16,7 @@ import {
   groupEvents,
   getEventBlockStyle,
   isWorkingHour,
+  isWorkingInterval,
   getCurrentEvents,
   getVisibleHours,
 } from "@/calendar/helpers";
@@ -98,19 +99,10 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
             <div className="relative flex-1 border-l">
               <div className="relative">
                 {hours.map((hour, index) => {
-                  const isDisabled = !isWorkingHour(
-                    selectedDate,
-                    hour,
-                    workingHours
-                  );
-
-                  return (
+                    return (
                     <div
                       key={hour}
-                      className={cn(
-                        "relative",
-                        isDisabled && "bg-calendar-disabled-hour"
-                      )}
+                      className="relative"
                       style={{ height: "96px" }}
                     >
                       {index !== 0 && (
@@ -123,7 +115,15 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                         minute={0}
                       >
                         <div
-                          className="absolute inset-x-0 top-0 h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                          className={cn(
+                            "absolute inset-x-0 top-0 h-[24px] cursor-pointer transition-colors hover:bg-accent",
+                            !isWorkingInterval(
+                              selectedDate,
+                              hour,
+                              0,
+                              workingHours
+                            ) && "bg-calendar-disabled-hour"
+                          )}
                           onClick={() =>
                             openAddAppointmentDialog({
                               startDate: selectedDate,
@@ -140,7 +140,16 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                         minute={15}
                       >
                         <div
-                          className="absolute inset-x-0 top-[24px] h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                          className={cn(
+                            "absolute inset-x-0 top-[24px] h-[24px] cursor-pointer transition-colors hover:bg-accent",
+                            !isWorkingInterval(
+                              selectedDate,
+                              hour,
+                              15,
+                              workingHours
+                            ) && "bg-calendar-disabled-hour"
+
+                          )}
                           onClick={() =>
                             openAddAppointmentDialog({
                               startDate: selectedDate,
@@ -159,7 +168,15 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                         minute={30}
                       >
                         <div
-                          className="absolute inset-x-0 top-[48px] h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                          className={cn(
+                            "absolute inset-x-0 top-[48px] h-[24px] cursor-pointer transition-colors hover:bg-accent",
+                            !isWorkingInterval(
+                              selectedDate,
+                              hour,
+                              30,
+                              workingHours
+                            ) && "bg-calendar-disabled-hour"
+                          )}
                           onClick={() =>
                             openAddAppointmentDialog({
                               startDate: selectedDate,
@@ -176,7 +193,15 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                         minute={45}
                       >
                         <div
-                          className="absolute inset-x-0 top-[72px] h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                          className={cn(
+                            "absolute inset-x-0 top-[72px] h-[24px] cursor-pointer transition-colors hover:bg-accent",
+                            !isWorkingInterval(
+                              selectedDate,
+                              hour,
+                              45,
+                              workingHours
+                            ) && "bg-calendar-disabled-hour"
+                          )}
                           onClick={() =>
                             openAddAppointmentDialog({
                               startDate: selectedDate,

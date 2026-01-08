@@ -33,16 +33,13 @@ export default function EventCard({
 }: EventCardProps) {
   return (
     <Card
-      className={cn(
-        "flex flex-col border-4 border-blue-500/10 shadow-2xl transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110",
-        !isActive && " bg-accent border-accent"
-      )}
+      className={cn("flex flex-col", !isActive && "border-secondary/50")}
     >
       {/* Card header with title and formatted duration */}
       <CardHeader className={cn(!isActive && "opacity-50")}>
         <CardTitle>{name}</CardTitle>
         <CardDescription>
-          {durationInMinutes}
+          {durationInMinutes} Minutos
           {/* {formatEventDescription(durationInMinutes)} */}
         </CardDescription>
       </CardHeader>
@@ -65,11 +62,8 @@ export default function EventCard({
           />
         )} */}
         {/* Edit event button */}
-        <Button
-          className="cursor-pointer hover:scale-105 bg-blue-400 hover:bg-blue-600"
-          asChild
-        >
-          <Link href={`/dashboard/events/${id}/edit`}>Edit</Link>
+        <Button asChild>
+          <Link href={`/dashboard/calendar/events/${id}/edit`}>Editar</Link>
         </Button>
       </CardFooter>
     </Card>

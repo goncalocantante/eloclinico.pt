@@ -81,6 +81,11 @@
   }
 }
 
+@utility bg-calendar-disabled-hour {
+  background-color: var(--color-muted);
+  opacity: 0.5;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

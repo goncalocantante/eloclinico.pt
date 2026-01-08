@@ -31,7 +31,7 @@ export async function createEvent(
     throw new Error(`Failed to book appointment: ${error.message || error}`);
   } finally {
     // Revalidate the '/events' path to ensure the page fetches fresh data after the database operation
-    revalidatePath("/dashboard/events");
+    revalidatePath("/dashboard/calendar/events");
   }
 }
 
@@ -71,7 +71,7 @@ export async function updateEvent(
     throw new Error(`Failed to update event: ${error.message || error}`);
   } finally {
     // Revalidate the '/events' path to ensure the page fetches fresh data after the database operation
-    revalidatePath("/dashboard/events");
+    revalidatePath("/dashboard/calendar/events");
   }
 }
 
@@ -105,7 +105,7 @@ export async function deleteEvent(
     throw new Error(`Failed to delete event: ${error.message || error}`);
   } finally {
     // Revalidate the '/events' path to ensure the page fetches fresh data after the database operation
-    revalidatePath("/dashboard/events");
+    revalidatePath("/dashboard/calendar/events");
   }
 }
 

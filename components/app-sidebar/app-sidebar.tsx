@@ -31,7 +31,7 @@ const navItems = [
       },
       {
         title: "Eventos",
-        url: "/dashboard/events",
+        url: "/dashboard/calendar/events",
       },
     ],
   },

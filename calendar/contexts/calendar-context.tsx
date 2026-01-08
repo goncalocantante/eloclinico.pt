@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import useSWR from "swr";
 import { pt } from "date-fns/locale";
 
@@ -15,6 +15,8 @@ import type {
 import { type Event } from "@/lib/db/schema";
 import { authClient } from "@/lib/auth/client";
 import { fetcher } from "@/lib/utils";
+import { scheduleToWorkingHours } from "@/calendar/helpers";
+import type { FullSchedule } from "@/server/actions/schedule";
 
 interface IAddAppointmentDialogState {
   patientId?: string;
@@ -41,6 +43,8 @@ interface ICalendarContext {
   refetchAppointments: () => Promise<IEvent[] | undefined>;
   locale: Locale;
   setLocale: (locale: Locale) => void;
+  schedule: FullSchedule | null | undefined;
+  refetchSchedule: () => Promise<FullSchedule | undefined>;
   // Add Appointment Dialog state
   isAddAppointmentDialogOpen: boolean;
   addAppointmentDialogState: IAddAppointmentDialogState;
@@ -50,15 +54,14 @@ interface ICalendarContext {
 
 const CalendarContext = createContext({} as ICalendarContext);
 
-const WORKING_HOURS = {
-  0: { from: 0, to: 0 },
-  1: { from: 8, to: 17 },
-  2: { from: 8, to: 17 },
-  3: { from: 8, to: 17 },
-  4: { from: 8, to: 17 },
-  5: { from: 8, to: 17 },
-  6: { from: 8, to: 12 },
-};
+const DEFAULT_WORKING_HOURS: TWorkingHours = [
+  { dayOfWeek: "monday", startTime: "08:00", endTime: "17:00" },
+  { dayOfWeek: "tuesday", startTime: "08:00", endTime: "17:00" },
+  { dayOfWeek: "wednesday", startTime: "08:00", endTime: "17:00" },
+  { dayOfWeek: "thursday", startTime: "08:00", endTime: "17:00" },
+  { dayOfWeek: "friday", startTime: "08:00", endTime: "17:00" },
+  { dayOfWeek: "saturday", startTime: "08:00", endTime: "12:00" },
+];
 
 const VISIBLE_HOURS = { from: 7, to: 18 };
 
@@ -72,9 +75,32 @@ export function CalendarProvider({
   const [badgeVariant, setBadgeVariant] = useState<TBadgeVariant>("colored");
   const [visibleHours, setVisibleHours] =
     useState<TVisibleHours>(VISIBLE_HOURS);
-  const [workingHours, setWorkingHours] =
-    useState<TWorkingHours>(WORKING_HOURS);
   const [locale, setLocale] = useState<Locale>(pt);
+
+  const {
+    data: session,
+    isPending, //loading state
+    error, //error object
+    refetch, //refetch the session
+  } = authClient.useSession();
+
+  // Fetch schedule from database
+  const { data: schedule, mutate: refetchSchedule } = useSWR<FullSchedule>(
+    session?.user?.id ? "/api/schedule" : null,
+    fetcher
+  );
+
+  // Convert schedule to working hours format
+  const dbWorkingHours = scheduleToWorkingHours(schedule);
+  const [workingHours, setWorkingHours] = useState<TWorkingHours>(
+    () => dbWorkingHours || DEFAULT_WORKING_HOURS
+  );
+
+  // Update working hours when schedule changes
+  useEffect(() => {
+    const converted = scheduleToWorkingHours(schedule);
+    setWorkingHours(converted || DEFAULT_WORKING_HOURS);
+  }, [schedule]);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -93,13 +119,6 @@ export function CalendarProvider({
     setIsAddAppointmentDialogOpen(false);
     setAddAppointmentDialogState({});
   };
-
-  const {
-    data: session,
-    isPending, //loading state
-    error, //error object
-    refetch, //refetch the session
-  } = authClient.useSession();
 
   const selectedUserId: IUser["id"] = session?.user?.id ?? "all";
   const setSelectedUserId = () => {};
@@ -143,6 +162,8 @@ export function CalendarProvider({
         refetchEvents,
         locale,
         setLocale,
+        schedule,
+        refetchSchedule,
         isAddAppointmentDialogOpen,
         addAppointmentDialogState,
         openAddAppointmentDialog,
