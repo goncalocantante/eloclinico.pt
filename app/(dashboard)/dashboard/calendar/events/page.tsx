@@ -1,7 +1,7 @@
 import EventCard from "@/components/event-card";
 import { Button } from "@/components/ui/button";
 import { getEvents } from "@/server/actions/events";
-import { CalendarPlus, CalendarRange } from "lucide-react";
+import { CalendarRange, Plus } from "lucide-react";
 import Link from "next/link";
 
 import { auth } from "@/lib/auth";
@@ -23,8 +23,8 @@ export default async function EventsPage() {
       <div className="flex justify-between items-center w-full mb-4">
         <h1 className="text-2xl font-bold">Events</h1>
         <Button asChild>
-          <Link href="/dashboard/events/new">
-            <CalendarPlus className="mr-2 size-4" /> New Event
+          <Link href="/dashboard/calendar/events/new">
+            <Plus className="mr-2 size-4" /> Novo Evento
           </Link>
         </Button>
       </div>
@@ -44,11 +44,11 @@ export default async function EventsPage() {
         <div className="flex flex-col items-center gap-4 py-8">
           <CalendarRange className="size-16 mx-auto text-muted-foreground" />
           <p className="text-muted-foreground">
-            You do not have any events yet. Create your first event to get started!
+            Ainda não tem nenhum evento. Crie o seu primeiro evento para começar!
           </p>
           <Button asChild>
-            <Link href="/dashboard/events/new">
-              <CalendarPlus className="mr-2 size-4" /> New Event
+            <Link href="/dashboard/calendar/events/new">
+              <Plus className="mr-2 size-4" /> Novo Evento
             </Link>
           </Button>
         </div>
