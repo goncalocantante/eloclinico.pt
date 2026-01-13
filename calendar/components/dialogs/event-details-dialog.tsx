@@ -1,7 +1,8 @@
 "use client";
 
 import { format, parseISO } from "date-fns";
-import { Calendar, Clock, Text, User } from "lucide-react";
+import { Calendar, Clock, Text, Trash2, User } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { EditAppointmentDialog } from "@/calendar/components/dialogs/edit-appointment-dialog";
@@ -14,9 +15,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
+import { useConfirm } from "@/contexts/confirm-action-context";
+import { deleteAppointment } from "@/calendar/actions/appointments";
+import { useDisclosure } from "@/hooks/use-disclosure";
 
 import type { IEvent } from "@/calendar/interfaces";
-import { useEffect } from "react";
 import useSWR from "swr";
 import { Patient } from "@/lib/db/schema";
 import { fetcher } from "@/lib/utils";
@@ -29,17 +32,42 @@ interface IProps {
 export function EventDetailsDialog({ event, children }: IProps) {
   const startDate = parseISO(event.startDate);
   const endDate = parseISO(event.endDate);
-
-  const { events: appointmentTypes } = useCalendar();
+  const confirm = useConfirm();
+  const { refetchAppointments, events: appointmentTypes } = useCalendar();
+  const { isOpen, onClose, onToggle } = useDisclosure();
 
   const { data: patients = [] } = useSWR<Patient[]>("/api/patients", fetcher);
 
+  const handleDelete = async () => {
+    const result = await confirm({
+      title: "Delete Appointment",
+      description:
+        "Are you sure you want to delete this appointment? This action cannot be undone.",
+    });
+
+    if (result) {
+      try {
+        const deleteResult = await deleteAppointment(String(event.id));
+
+        if (deleteResult.success) {
+          toast.success("Appointment deleted successfully");
+          await refetchAppointments();
+          onClose();
+        } else {
+          toast.error(deleteResult.error || "Failed to delete appointment");
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Failed to delete appointment");
+      }
+    }
+  };
+
   return (
     <>
-      <Dialog>
+      <Dialog open={isOpen} onOpenChange={onToggle}>
         <DialogTrigger asChild>{children}</DialogTrigger>
 
-        <DialogContent>
+        <DialogContent showDeleteButton={true} onDelete={handleDelete}>
           <DialogHeader>
             <DialogTitle>{event.title}</DialogTitle>
           </DialogHeader>
@@ -47,7 +75,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
           <div className="flex items-start gap-2">
             <User className="mt-1 size-4 shrink-0" />
             <div>
-              <p className="text-sm font-medium">Patient</p>
+              <p className="text-sm font-medium">Paciente</p>
               <p className="text-sm text-muted-foreground">
                 {
                   patients.find((patient) => patient.id === event.patientId)
@@ -75,7 +103,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
             <div className="flex items-start gap-2">
               <User className="mt-1 size-4 shrink-0" />
               <div>
-                <p className="text-sm font-medium">Appointment Type</p>
+                <p className="text-sm font-medium">Tipo de Consulta</p>
                 <p className="text-sm text-muted-foreground">
                   {
                     appointmentTypes.find(
@@ -89,7 +117,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
             <div className="flex items-start gap-2">
               <Text className="mt-1 size-4 shrink-0" />
               <div>
-                <p className="text-sm font-medium">Notes</p>
+                <p className="text-sm font-medium">Notas</p>
                 <p className="text-sm text-muted-foreground">{event.notes}</p>
               </div>
             </div>
@@ -98,7 +126,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
           <DialogFooter>
             <EditAppointmentDialog event={event}>
               <Button type="button" variant="outline">
-                Edit
+                Editar
               </Button>
             </EditAppointmentDialog>
           </DialogFooter>

@@ -391,12 +391,12 @@ export function EditAppointmentDialog({ children, event }: IProps) {
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="outline">
-              Cancel
+              Cancelar
             </Button>
           </DialogClose>
 
           <Button form="event-form" type="submit">
-            Save changes
+            Guardar alterações
           </Button>
         </DialogFooter>
       </DialogContent>

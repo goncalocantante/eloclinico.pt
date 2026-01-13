@@ -85,7 +85,7 @@ export default function EventForm({
       event == null ? createEvent : updateEvent.bind(null, event.id);
     try {
       await action(values);
-      router.push("/dashboard/events");
+      router.push("/dashboard/calendar/events");
     } catch (error: any) {
       // Handle any error that occurs during the action (e.g., network error)
       form.setError("root", {
@@ -214,7 +214,7 @@ export default function EventForm({
                         try {
                           // Attempt to delete the event by its ID
                           await deleteEvent(event.id);
-                          router.push("/dashboard/events");
+                          router.push("/dashboard/calendar/events");
                         } catch (error: any) {
                           // If something goes wrong, show an error at the root level of the form
                           form.setError("root", {
@@ -238,7 +238,7 @@ export default function EventForm({
             asChild
             variant="outline"
           >
-            <Link href="/dashboard/events">Cancel</Link>
+            <Link href="/dashboard/calendar/events">Cancel</Link>
           </Button>
 
           {/* Save Button - submits the form */}

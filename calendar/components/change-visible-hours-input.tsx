@@ -67,7 +67,7 @@ export function ChangeVisibleHoursInput() {
       </div>
 
       <Button className="mt-4 w-fit" onClick={handleApply}>
-        Apply
+        Guardar alterações
       </Button>
     </div>
   );

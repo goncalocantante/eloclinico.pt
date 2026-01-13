@@ -28,7 +28,7 @@ export default function PublicEventCard({
   durationInMinutes,
 }: PublicEventCardProps) {
   return (
-    <Card className="flex flex-col border-4 border-blue-500/10 shadow-2xl transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110">
+    <Card className="flex flex-col">
       <CardHeader>
         {/* Card title and description */}
         <CardTitle>{name}</CardTitle>
@@ -41,11 +41,8 @@ export default function PublicEventCard({
       {description && <CardContent>{description}</CardContent>}
       <CardFooter className="flex justify-end gap-2 mt-auto">
         {/* Select button that links to the booking page for the specific event */}
-        <Button
-          className="cursor-pointer hover:scale-105 bg-blue-400 hover:bg-blue-600"
-          asChild
-        >
-          <Link href={`/book/${userId}/${id}`}>Select</Link>
+        <Button asChild>
+          <Link href={`/book/${userId}/${id}`}>Selecionar</Link>
         </Button>
       </CardFooter>
     </Card>

@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db/drizzle";
 
 import { eventSchema } from "@/calendar/schemas";
@@ -141,4 +141,30 @@ export const updateAppointment = async (id: string, data: any) => {
     .returning();
 
   return res;
+};
+
+export const deleteAppointment = async (id: string) => {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("User is not authenticated");
+  }
+
+  // Check if appointment exists and belongs to the authenticated user
+  const [appointment] = await db
+    .select()
+    .from(appointments)
+    .where(and(eq(appointments.id, id), eq(appointments.userId, user.id)))
+    .limit(1);
+
+  if (!appointment) {
+    return {
+      success: false,
+      error: "Appointment not found or you don't have permission to delete it.",
+    };
+  }
+
+  // Delete the appointment
+  await db.delete(appointments).where(eq(appointments.id, id));
+
+  return { success: true };
 };

@@ -407,7 +407,7 @@ export function AddAppointmentDialog({ children }: IProps) {
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="outline">
-              Cancel
+              Cancelar
             </Button>
           </DialogClose>
 
