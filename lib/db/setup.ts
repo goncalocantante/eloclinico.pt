@@ -115,7 +115,6 @@ async function main() {
 
   await writeEnvFile({
     DATABASE_URL,
-
     BASE_URL,
     AUTH_SECRET,
   });

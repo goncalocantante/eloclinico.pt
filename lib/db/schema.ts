@@ -72,7 +72,7 @@ export const patients = pgTable("patients", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   phone: varchar("phone", { length: 16 }),
   // address: varchar("address", { length: 100 }),
-  dateOfBirth: date({ mode: "date" }),
+  dateOfBirth: date("date_of_birth", { mode: "date" }),
   // information: text("information"),
   // profileImage: varchar("profileImage", { length: 100 }),
 });

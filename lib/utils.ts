@@ -17,3 +17,19 @@ export function timeToFloat(time: string): number {
 }
 
 export const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export const getBaseUrl = () => {
+  // 1. If we are in the browser, use the current relative path
+  if (typeof window !== 'undefined') return '';
+
+  // 2. If we are on Vercel Production, use your specific custom domain
+  if (process.env.VERCEL_ENV === 'production') return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL}`; 
+
+  // 3. If we are on a Vercel Preview branch, use the dynamic Vercel URL
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+
+  // 4. Fallback to localhost for local development
+  return `http://localhost:3000`;
+};
+
+export const baseUrl = getBaseUrl();
