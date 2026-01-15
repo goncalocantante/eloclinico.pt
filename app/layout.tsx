@@ -6,6 +6,7 @@ import { SWRConfig } from "swr";
 import { getAppointments } from "@/lib/db/queries/appointment-queries";
 import { getEvents } from "@/server/actions/events";
 import { Toaster } from "@/components/ui/sonner";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "Psychologist App",
@@ -43,6 +44,7 @@ export default function RootLayout({
         >
           {children}
           <Toaster />
+          <SpeedInsights />
         </SWRConfig>
       </body>
     </html>
