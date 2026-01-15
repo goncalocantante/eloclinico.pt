@@ -15,9 +15,9 @@ export async function GET() {
 
     const schedule = await getSchedule(session.user.id);
     return NextResponse.json(schedule || null);
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json(
-      { error: error.message || "Failed to fetch schedule" },
+      { error: (error as Error).message || "Failed to fetch schedule" },
       { status: 500 }
     );
   }

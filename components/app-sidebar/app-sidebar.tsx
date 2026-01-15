@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { SquareTerminal, Calendar, Sprout } from "lucide-react";
+import { SquareTerminal, Calendar } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { NavMain } from "@/components/app-sidebar/nav-main";

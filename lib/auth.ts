@@ -13,10 +13,11 @@ export const auth = betterAuth({
   }),
   socialProviders: {
     google: {
-      prompt: "select_account",
+      prompt: "consent",
+      accessType: "offline",
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      scope: ["https://www.googleapis.com/auth/calendar.events"], // Only this scope will be used
+      scope: ["https://www.googleapis.com/auth/calendar.events", "openid", "profile", "email"], // added basic scopes
     },
   },
   user: {
@@ -31,7 +32,7 @@ export const auth = betterAuth({
   },
   advanced: {
     database: {
-      generateId: (options) => {
+      generateId: (/* options */) => {
         // Generate UUIDs for all tables including users
         return crypto.randomUUID();
       },

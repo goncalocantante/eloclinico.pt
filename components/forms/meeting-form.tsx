@@ -95,10 +95,10 @@ export default function MeetingForm({
         meetingData.eventId
       }/success?startTime=${meetingData.startTime.toISOString()}`;
       router.push(path);
-    } catch (error: any) {
+    } catch (error) {
       // Handle any error that occurs during the meeting creation
       form.setError("root", {
-        message: `There was an unknown error saving your event ${error.message}`,
+        message: `There was an unknown error saving your event ${(error as Error).message}`,
       });
     }
   }

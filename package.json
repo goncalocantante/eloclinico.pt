@@ -10,7 +10,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:reset": "./scripts/reset-db.sh",
     "db:studio": "drizzle-kit studio",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@dpaskhin/unique": "^1.0.0",

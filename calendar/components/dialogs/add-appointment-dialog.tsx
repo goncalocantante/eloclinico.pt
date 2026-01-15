@@ -241,7 +241,7 @@ export function AddAppointmentDialog({ children }: IProps) {
               <FormField
                 control={form.control}
                 name="startDate"
-                render={({ field, fieldState }) => (
+                render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormLabel htmlFor="startDate">Start Date</FormLabel>
                     <FormControl>
@@ -278,7 +278,7 @@ export function AddAppointmentDialog({ children }: IProps) {
               <FormField
                 control={form.control}
                 name="startTime"
-                render={({ field, fieldState }) => (
+                render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormLabel>Start Time</FormLabel>
 
@@ -298,7 +298,7 @@ export function AddAppointmentDialog({ children }: IProps) {
               <FormField
                 control={form.control}
                 name="endTime"
-                render={({ field, fieldState }) => (
+                render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormLabel>End Time</FormLabel>
                     <FormControl>

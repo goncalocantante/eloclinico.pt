@@ -9,7 +9,7 @@ import { EditAppointmentDialog } from "@/calendar/components/dialogs/edit-appoin
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
+  // DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -51,8 +51,8 @@ export function EventDetailsDialog({ event, children }: IProps) {
         } else {
           toast.error(deleteResult.error || "Erro ao cancelar consulta");
         }
-      } catch (error: any) {
-        toast.error(error.message || "Erro ao cancelar consulta");
+      } catch (error) {
+        toast.error((error as Error).message || "Erro ao cancelar consulta");
       }
     }
   };

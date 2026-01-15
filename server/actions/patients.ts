@@ -7,6 +7,8 @@ import { patients, appointments } from "@/lib/db/schema";
 import type { Patient } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getUser } from "@/lib/db/queries/queries";
+import { createClientFormSchema } from "@/schema/patients";
+import { z } from "zod";
 
 type ActionResult<T = void> =
   | { success: true; data?: T }
@@ -17,7 +19,7 @@ export async function getPatients(): Promise<Patient[]> {
   return patientsData;
 }
 
-export const createPatient = async (data: any): Promise<ActionResult> => {
+export const createPatient = async (data: z.infer<typeof createClientFormSchema>): Promise<ActionResult> => {
   const user = await getUser();
   const userId = user?.id;
 
@@ -39,10 +41,10 @@ export const createPatient = async (data: any): Promise<ActionResult> => {
     revalidatePath("/dashboard/patients");
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     return {
       success: false,
-      error: error.message || "Falha ao criar paciente.",
+      error: (error as Error).message || "Falha ao criar paciente.",
     };
   }
 };

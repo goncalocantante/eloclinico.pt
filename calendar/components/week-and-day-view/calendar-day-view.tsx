@@ -15,7 +15,6 @@ import { cn } from "@/lib/utils";
 import {
   groupEvents,
   getEventBlockStyle,
-  isWorkingHour,
   isWorkingInterval,
   getCurrentEvents,
   getVisibleHours,

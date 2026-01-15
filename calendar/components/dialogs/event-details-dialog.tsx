@@ -1,7 +1,7 @@
 "use client";
 
 import { format, parseISO } from "date-fns";
-import { Calendar, Clock, Text, Trash2, User } from "lucide-react";
+import { Clock, Text, User } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -56,8 +56,8 @@ export function EventDetailsDialog({ event, children }: IProps) {
         } else {
           toast.error(deleteResult.error || "Failed to delete appointment");
         }
-      } catch (error: any) {
-        toast.error(error.message || "Failed to delete appointment");
+      } catch (error) {
+        toast.error((error as Error).message || "Failed to delete appointment");
       }
     }
   };

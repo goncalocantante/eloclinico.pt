@@ -32,7 +32,7 @@ export default async function EventsPage() {
       {/* Show event cards if any exist, otherwise show empty state */}
       {events.length > 0 ? (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-          {events.map((event: any) => (
+          {events.map((event) => (
             <EventCard
               key={event.id}
               {...event}

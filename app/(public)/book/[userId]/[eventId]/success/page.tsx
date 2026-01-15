@@ -31,7 +31,7 @@ export default async function SuccessPage({
     return (
       <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md flex items-center gap-2 text-sm max-w-md mx-auto mt-6">
         <AlertTriangle className="w-5 h-5" />
-        <span>This event doesn't exist anymore.</span>
+        <span>This event doesn&apos;t exist anymore.</span>
       </div>
     );
 
@@ -55,7 +55,7 @@ export default async function SuccessPage({
       </CardHeader>
       <CardContent>
         {/* Inform the user that a confirmation email is on its way */}
-        You should receive an email confirmation shortly. You can safely close
+          You&apos;ll receive a calendar invitation shortly. You can safely close
         this page now.
       </CardContent>
     </Card>

@@ -3,11 +3,9 @@
 "use server";
 import { fromZonedTime } from "date-fns-tz";
 import { db } from "@/lib/db/drizzle";
-import { accounts, scheduleAvailability, schedules } from "@/lib/db/schema";
+import { scheduleAvailability, schedules } from "@/lib/db/schema";
 import { scheduleFormSchema } from "@/schema/schedule";
-import { auth } from "@/lib/auth";
-import { eq, sql } from "drizzle-orm";
-import { BatchItem } from "drizzle-orm/batch";
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getCalendarEventTimes } from "../google/googleCalendar";
@@ -95,9 +93,9 @@ export async function saveSchedule(
         );
       }
     });
-  } catch (error: any) {
+  } catch (error) {
     // Catch and throw an error with a readable message
-    throw new Error(`Failed to save schedule: ${error.message || error}`);
+    throw new Error(`Failed to save schedule: ${(error as Error).message || error}`);
   } finally {
     // Revalidate the /schedule path to update the cache and reflect the new data
     revalidatePath("/dashboard/calendar/availability");

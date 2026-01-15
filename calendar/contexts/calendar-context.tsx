@@ -79,9 +79,9 @@ export function CalendarProvider({
 
   const {
     data: session,
-    isPending, //loading state
-    error, //error object
-    refetch, //refetch the session
+    // isPending, //loading state
+    // error, //error object
+    // refetch: _refetch, //refetch the session
   } = authClient.useSession();
 
   // Fetch schedule from database
@@ -98,8 +98,13 @@ export function CalendarProvider({
 
   // Update working hours when schedule changes
   useEffect(() => {
-    const converted = scheduleToWorkingHours(schedule);
-    setWorkingHours(converted || DEFAULT_WORKING_HOURS);
+    if (schedule) {
+      const converted = scheduleToWorkingHours(schedule);
+      if (converted && JSON.stringify(converted) !== JSON.stringify(workingHours)) {
+         setWorkingHours(converted);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schedule]);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
