@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useMemo } from "react";
 import useSWR from "swr";
 import { pt } from "date-fns/locale";
 
@@ -34,7 +34,6 @@ interface ICalendarContext {
   setBadgeVariant: (variant: TBadgeVariant) => void;
   users: IUser[];
   workingHours: TWorkingHours;
-  setWorkingHours: Dispatch<SetStateAction<TWorkingHours>>;
   visibleHours: TVisibleHours;
   setVisibleHours: Dispatch<SetStateAction<TVisibleHours>>;
   events: Event[];
@@ -91,20 +90,9 @@ export function CalendarProvider({
   );
 
   // Convert schedule to working hours format
-  const dbWorkingHours = scheduleToWorkingHours(schedule);
-  const [workingHours, setWorkingHours] = useState<TWorkingHours>(
-    () => dbWorkingHours || DEFAULT_WORKING_HOURS
-  );
-
-  // Update working hours when schedule changes
-  useEffect(() => {
-    if (schedule) {
-      const converted = scheduleToWorkingHours(schedule);
-      if (converted && JSON.stringify(converted) !== JSON.stringify(workingHours)) {
-         setWorkingHours(converted);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  const workingHours = useMemo(() => {
+    const converted = scheduleToWorkingHours(schedule);
+    return converted || DEFAULT_WORKING_HOURS;
   }, [schedule]);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -160,7 +148,6 @@ export function CalendarProvider({
         visibleHours,
         setVisibleHours,
         workingHours,
-        setWorkingHours,
         appointments: appointments,
         refetchAppointments,
         events: events,
