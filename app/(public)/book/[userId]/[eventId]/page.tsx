@@ -32,7 +32,7 @@ export default async function BookingPage({
     return (
       <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md flex items-center gap-2 text-sm max-w-md mx-auto mt-6">
         <AlertTriangle className="w-5 h-5" />
-        <span>This event doesn't exist anymore.</span>
+        <span>This event doesn&apos;t exist anymore.</span>
       </div>
     );
 
@@ -62,6 +62,7 @@ export default async function BookingPage({
   }
 
   // Render the booking form with the list of valid available times
+  // We&apos;re looking forward to seeing you!
   return (
     <Card className="max-w-4xl mx-auto border-8 border-blue-200 shadow-2xl shadow-accent-foreground">
       <CardHeader>

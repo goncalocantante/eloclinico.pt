@@ -20,7 +20,6 @@ import { cn } from "@/lib/utils";
 import {
   groupEvents,
   getEventBlockStyle,
-  isWorkingHour,
   isWorkingInterval,
   getVisibleHours,
 } from "@/calendar/helpers";

@@ -52,61 +52,63 @@ export const columns: ColumnDef<Patient>[] = [
   },
   {
     accessorKey: "actions",
-    header: ({ column }) => <span>Ações</span>,
-    cell: ({ row }) => {
-      const confirm = useConfirm();
-      const { openAddAppointmentDialog } = useCalendar();
-      const patient = row.original;
-
-      async function handleDelete() {
-        const result = await confirm({
-          title: "Eliminar Paciente",
-          description:
-            "Tem a certeza que deseja eliminar este paciente? Esta ação é irreversível.",
-        });
-
-        if (result) {
-          // User confirmed — proceed with delete
-          const deleteResult = await deletePatient(patient.id);
-
-          if (deleteResult.success) {
-            toast.success("Paciente eliminado com sucesso");
-          } else {
-            toast.error(deleteResult.error);
-          }
-        }
-      }
-
-      function handleSchedule() {
-        openAddAppointmentDialog({
-          patientId: patient.id,
-        });
-      }
-
-      return (
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" aria-label="Open menu" size="icon-sm">
-              <MoreHorizontalIcon />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-40" align="end">
-            <DropdownMenuGroup>
-              <DropdownMenuItem
-                className="cursor-pointer w-full"
-                onClick={handleSchedule}
-              >
-                <CalendarClock />
-                Agendar
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDelete}>
-                <Trash2 />
-                Eliminar
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
+    header: () => <span>Ações</span>,
+    cell: ({ row }) => <PatientActions patient={row.original} />,
   },
 ];
+
+function PatientActions({ patient }: { patient: Patient }) {
+  const confirm = useConfirm();
+  const { openAddAppointmentDialog } = useCalendar();
+
+  async function handleDelete() {
+    const result = await confirm({
+      title: "Eliminar Paciente",
+      description:
+        "Tem a certeza que deseja eliminar este paciente? Esta ação é irreversível.",
+    });
+
+    if (result) {
+      // User confirmed — proceed with delete
+      const deleteResult = await deletePatient(patient.id);
+
+      if (deleteResult.success) {
+        toast.success("Paciente eliminado com sucesso");
+      } else {
+        toast.error(deleteResult.error);
+      }
+    }
+  }
+
+  function handleSchedule() {
+    openAddAppointmentDialog({
+      patientId: patient.id,
+    });
+  }
+
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" aria-label="Open menu" size="icon-sm">
+          <MoreHorizontalIcon />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-40" align="end">
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            className="cursor-pointer w-full"
+            onClick={handleSchedule}
+          >
+            <CalendarClock />
+            Agendar
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleDelete}>
+            <Trash2 />
+            Eliminar
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+

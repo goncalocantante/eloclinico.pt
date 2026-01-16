@@ -6,7 +6,7 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/drizzle";
 import { users } from "@/lib/db/schema";
-import { getUser } from "@/lib/db/queries/queries";
+
 import { validatedActionWithUser } from "@/lib/auth/middleware";
 
 export async function signOut() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Moon, Plus, Trash2 } from "lucide-react";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 
@@ -31,17 +31,22 @@ const DAYS_OF_WEEK = [
 ] as const;
 
 export function ChangeWorkingHoursInput() {
-  const { workingHours, setWorkingHours, refetchSchedule, schedule } =
-    useCalendar();
+  const { workingHours } = useCalendar();
+  
+  return (
+    <WorkingHoursForm 
+      key={JSON.stringify(workingHours)} 
+      initialWorkingHours={workingHours} 
+    />
+  );
+}
+
+function WorkingHoursForm({ initialWorkingHours }: { initialWorkingHours: TWorkingHours }) {
+  const { refetchSchedule, schedule } = useCalendar();
 
   const [localWorkingHours, setLocalWorkingHours] = useState<TWorkingHours>(
-    () => workingHours || []
+    () => initialWorkingHours || []
   );
-
-  // Sync local state when workingHours from context changes (e.g., after loading from DB)
-  useEffect(() => {
-    setLocalWorkingHours(workingHours || []);
-  }, [workingHours]);
 
   // Get intervals for a specific day
   const getDayIntervals = (
@@ -177,16 +182,13 @@ export function ChangeWorkingHoursInput() {
       const scheduleData = workingHoursToSchedule(validWorkingHours, timezone);
       await saveSchedule(scheduleData);
 
-      // Update context
-      setWorkingHours(validWorkingHours);
-
       // Refetch schedule from database to ensure consistency
       await refetchSchedule();
 
       toast.success("Working hours saved successfully");
-    } catch (error: any) {
+    } catch (error) {
       toast.error(
-        error.message || "Failed to save working hours. Please try again."
+        (error as Error).message || "Failed to save working hours. Please try again."
       );
     }
   };

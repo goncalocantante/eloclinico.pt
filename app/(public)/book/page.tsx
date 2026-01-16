@@ -9,8 +9,8 @@ export default function PublicPage() {
   const {
     data: session,
     isPending, //loading state
-    error, //error object
-    refetch, //refetch the session
+    // error, //error object
+    // refetch, //refetch the session
   } = authClient.useSession();
 
   const user = session?.user;

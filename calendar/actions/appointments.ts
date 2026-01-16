@@ -10,7 +10,7 @@ import { getSchedule } from "@/server/actions/schedule";
 import { getPublicEvents } from "@/server/actions/events";
 import { createCalendarEvent } from "@/server/google/googleCalendar";
 
-export const createAppointment = async (data: any) => {
+export const createAppointment = async (data: unknown) => {
   const user = await getUser();
   if (!user) {
     throw new Error("User is not authenticated");
@@ -20,6 +20,15 @@ export const createAppointment = async (data: any) => {
   if (!result.success) {
     console.log("Error parsing event schema: ", result);
     return { error: result.error.issues[0].message };
+  }
+
+  if (
+    !result.data.startDate ||
+    !result.data.startTime ||
+    !result.data.endTime ||
+    !result.data.patientId
+  ) {
+    return { error: "Missing required fields" };
   }
 
   // Get user's schedule and first active event
@@ -32,31 +41,31 @@ export const createAppointment = async (data: any) => {
   if (events.length === 0) {
     throw new Error("No active events found for user");
   }
-  const event = events.find((event) => event.id === data.appointmentType);
+  const event = events.find((event) => event.id === result.data.appointmentType);
   if (!event || !event.id) {
     throw new Error("Event not found");
   }
 
   // Combine startDate and startTime into startDateTime
-  const startDateTime = new Date(data.startDate);
-  const endDate = data.startDate;
+  const startDateTime = new Date(result.data.startDate);
+  const endDate = result.data.startDate;
   const endDateTime = new Date(endDate);
 
-  // Parse the "HH:mm" string from data.startTime
-  const [startHours, startMinutes] = data.startTime.split(":").map(Number);
-  const [endHours, endMinutes] = data.endTime.split(":").map(Number);
+  // Parse the "HH:mm" string from result.data.startTime
+  const [startHours, startMinutes] = result.data.startTime.split(":").map(Number);
+  const [endHours, endMinutes] = result.data.endTime.split(":").map(Number);
   startDateTime.setHours(startHours, startMinutes);
   endDateTime.setHours(endHours, endMinutes);
 
   const dbData = {
     userId: user.id,
-    patientId: data.patientId,
-    title: data.title || null,
-    appointmentType: data.appointmentType,
+    patientId: result.data.patientId,
+    title: result.data.title || null,
+    appointmentType: result.data.appointmentType,
     startDateTime: startDateTime,
     endDateTime: endDateTime,
-    notes: data.notes || null,
-    color: data.color,
+    notes: result.data.notes || null,
+    color: result.data.color || "blue",
     scheduleId: schedule.id,
     eventId: event.id,
   };
@@ -64,7 +73,7 @@ export const createAppointment = async (data: any) => {
   const res = await db.insert(appointments).values(dbData).returning();
 
   const patient = await db.query.patients.findFirst({
-    where: eq(patients.id, data.patientId),
+    where: eq(patients.id, result.data.patientId),
   });
 
   if (!patient) {
@@ -78,12 +87,12 @@ export const createAppointment = async (data: any) => {
     guestEmail: patient.email || "",
     startTime: startDateTime,
     durationInMinutes: event.durationInMinutes || 0,
-    eventName: data.title || "",
+    eventName: result.data.title || "",
   });
   return res;
 };
 
-export const updateAppointment = async (id: string, data: any) => {
+export const updateAppointment = async (id: string, data: unknown) => {
   const user = await getUser();
   if (!user) {
     throw new Error("User is not authenticated");
@@ -93,6 +102,15 @@ export const updateAppointment = async (id: string, data: any) => {
   if (!result.success) {
     console.log("Error parsing event schema: ", result);
     return { error: result.error.issues[0].message };
+  }
+
+  if (
+    !result.data.startDate ||
+    !result.data.startTime ||
+    !result.data.endTime ||
+    !result.data.patientId
+  ) {
+    return { error: "Missing required fields" };
   }
 
   // Get user's schedule
@@ -105,31 +123,31 @@ export const updateAppointment = async (id: string, data: any) => {
   if (events.length === 0) {
     throw new Error("No active events found for user");
   }
-  const eventId = events.find((event) => event.id === data.appointmentType)?.id;
+  const eventId = events.find((event) => event.id === result.data.appointmentType)?.id;
   if (!eventId) {
     throw new Error("Event not found");
   }
 
   // Combine startDate and startTime into startDateTime
-  const startDateTime = new Date(data.startDate);
-  const endDate = data.startDate;
+  const startDateTime = new Date(result.data.startDate);
+  const endDate = result.data.startDate;
   const endDateTime = new Date(endDate);
 
-  // Parse the "HH:mm" string from data.startTime
-  const [startHours, startMinutes] = data.startTime.split(":").map(Number);
-  const [endHours, endMinutes] = data.endTime.split(":").map(Number);
+  // Parse the "HH:mm" string from result.data.startTime
+  const [startHours, startMinutes] = result.data.startTime.split(":").map(Number);
+  const [endHours, endMinutes] = result.data.endTime.split(":").map(Number);
   startDateTime.setHours(startHours, startMinutes);
   endDateTime.setHours(endHours, endMinutes);
 
   const dbData = {
     userId: user.id,
-    patientId: data.patientId,
-    title: data.title || null,
-    appointmentType: data.appointmentType,
+    patientId: result.data.patientId,
+    title: result.data.title || null,
+    appointmentType: result.data.appointmentType,
     startDateTime: startDateTime,
     endDateTime: endDateTime,
-    notes: data.notes || null,
-    color: data.color,
+    notes: result.data.notes || null,
+    color: result.data.color || "blue",
     scheduleId: schedule.id,
     eventId: eventId,
   };

@@ -33,9 +33,9 @@ async function getOAuthClient(betterAuthUserId: string) {
     oAuthClient.setCredentials({ access_token: data.accessToken });
 
     return oAuthClient;
-  } catch (err: any) {
+  } catch (err) {
     // Catch any errors and rethrow with a detailed message
-    throw new Error(`Failed to get OAuth client: ${err.message}`);
+    throw new Error(`Failed to get OAuth client: ${(err as Error).message}`);
   }
 }
 
@@ -65,8 +65,8 @@ export async function getCalendarEventTimes(
 
     // Process and format the events
     return (
-      events.data.items
-        ?.map((event: any) => {
+      (events.data.items as calendar_v3.Schema$Event[])
+        ?.map((event) => {
           // Handle all-day events (no specific time, just a date)
           if (event.start?.date && event.end?.date) {
             return {
@@ -88,12 +88,11 @@ export async function getCalendarEventTimes(
         })
         // Filter out any undefined results and enforce correct typing
         .filter(
-          // todo fix "any"
-          (date: any): date is { start: Date; end: Date } => date !== undefined
+          (date): date is { start: Date; end: Date } => date !== undefined
         ) || []
     );
-  } catch (err: any) {
-    throw new Error(`Failed to fetch calendar events: ${err.message || err}`);
+  } catch (err) {
+    throw new Error(`Failed to fetch calendar events: ${(err as Error).message || err}`);
   }
 }
 
@@ -161,11 +160,11 @@ export async function createCalendarEvent({
     });
 
     return calendarEvent.data; // Return the event data that includes the details of the newly created calendar event.
-  } catch (error: any) {
+  } catch (error) {
     // Catch and handle any errors that occur during the process.
-    console.error("Error creating calendar event:", error.message || error); // Log the error to the console.
+    console.error("Error creating calendar event:", (error as Error).message || error); // Log the error to the console.
     throw new Error(
-      `Failed to create calendar event: ${error.message || error}`
+      `Failed to create calendar event: ${(error as Error).message || error}`
     ); // Throw a new error with a detailed message.
   }
 }

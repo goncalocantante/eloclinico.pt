@@ -19,7 +19,7 @@ const connectionString = process.env.DATABASE_URL;
 let globalClient: Sql | undefined;
 
 declare global {
-  // eslint-disable-next-line no-var
+
   var __postgresClient: Sql | undefined;
 }
 

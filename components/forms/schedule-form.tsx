@@ -76,10 +76,10 @@ export function ScheduleForm({
     try {
       await saveSchedule(values);
       toast.success("Disponibilidade guardada com sucesso");
-    } catch (error: any) {
+    } catch (error) {
       // Handle any unexpected errors that occur during the schedule saving process
       form.setError("root", {
-        message: `Houve um erro ao guardar a sua disponibilidade: ${error.message}`,
+        message: `Houve um erro ao guardar a sua disponibilidade: ${(error as Error).message}`,
       });
     }
   }

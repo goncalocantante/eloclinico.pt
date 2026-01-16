@@ -4,7 +4,6 @@ import { promisify } from "node:util";
 import readline from "node:readline";
 import crypto from "node:crypto";
 import path from "node:path";
-import os from "node:os";
 
 const execAsync = promisify(exec);
 
@@ -45,7 +44,7 @@ async function setupLocalPostgres() {
   try {
     await execAsync("docker --version");
     console.log("Docker is installed.");
-  } catch (error) {
+  } catch {
     console.error(
       "Docker is not installed. Please install Docker and try again."
     );
@@ -84,7 +83,7 @@ volumes:
   try {
     await execAsync("docker compose up -d");
     console.log("Docker container started successfully.");
-  } catch (error) {
+  } catch {
     console.error(
       "Failed to start Docker container. Please check your Docker installation and try again."
     );
@@ -115,7 +114,6 @@ async function main() {
 
   await writeEnvFile({
     DATABASE_URL,
-
     BASE_URL,
     AUTH_SECRET,
   });

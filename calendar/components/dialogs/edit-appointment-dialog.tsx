@@ -3,7 +3,6 @@
 import { parseISO } from "date-fns";
 import { useForm } from "react-hook-form";
 import {
-  AlertTriangle,
   Check,
   ChevronDownIcon,
   ChevronsUpDown,
@@ -43,7 +42,7 @@ import {
   DialogContent,
   DialogTrigger,
   DialogTitle,
-  DialogDescription,
+  // DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
@@ -225,7 +224,7 @@ export function EditAppointmentDialog({ children, event }: IProps) {
               <FormField
                 control={form.control}
                 name="startDate"
-                render={({ field, fieldState }) => (
+                render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormLabel htmlFor="startDate">Start Date</FormLabel>
                     <FormControl>
@@ -262,7 +261,7 @@ export function EditAppointmentDialog({ children, event }: IProps) {
               <FormField
                 control={form.control}
                 name="startTime"
-                render={({ field, fieldState }) => (
+                render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormLabel>Start Time</FormLabel>
 
@@ -282,7 +281,7 @@ export function EditAppointmentDialog({ children, event }: IProps) {
               <FormField
                 control={form.control}
                 name="endTime"
-                render={({ field, fieldState }) => (
+                render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormLabel>End Time</FormLabel>
                     <FormControl>
