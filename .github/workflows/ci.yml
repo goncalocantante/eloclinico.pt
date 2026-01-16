@@ -43,3 +43,6 @@ jobs:
           # Add any build-time env vars here if needed for the build to pass.
           # Often Next.js builds might need public vars.
           NEXT_PUBLIC_APP_URL: http://localhost:3000
+          # Dummy URL to satisfy lib/db/drizzle.ts validation during build.
+          # Not used for actual connections in this step.
+          DATABASE_URL: postgres://placeholder:5432/db
