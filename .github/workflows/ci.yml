@@ -46,3 +46,7 @@ jobs:
           # Dummy URL to satisfy lib/db/drizzle.ts validation during build.
           # Not used for actual connections in this step.
           DATABASE_URL: postgres://placeholder:5432/db
+          # Dummy secrets to silence better-auth warnings during build.
+          BETTER_AUTH_SECRET: placeholder-secret
+          GOOGLE_CLIENT_ID: placeholder-client-id
+          GOOGLE_CLIENT_SECRET: placeholder-client-secret
