@@ -124,8 +124,14 @@ export default async function HomePage() {
             <BrainCircuit className="h-6 w-6 text-primary" />
             <span className="text-lg font-bold text-gray-900 dark:text-gray-100">Elo</span>
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            © {new Date().getFullYear()} Elo. Todos os direitos reservados.
+          <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
+            <Link href="/privacy" className="hover:text-primary transition-colors">
+              Política de Privacidade
+            </Link>
+            <Link href="/terms" className="hover:text-primary transition-colors">
+              Termos de Serviço
+            </Link>
+            <span>© {new Date().getFullYear()} Elo. Todos os direitos reservados.</span>
           </div>
         </div>
       </footer>

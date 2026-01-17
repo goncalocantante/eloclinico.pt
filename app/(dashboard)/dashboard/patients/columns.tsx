@@ -35,7 +35,7 @@ export const columns: ColumnDef<Patient>[] = [
   {
     accessorKey: "phone",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Phone" />
+      <DataTableColumnHeader column={column} title="Telemóvel" />
     ),
   },
   {

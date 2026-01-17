@@ -74,7 +74,7 @@ export function PatientForm({ onClose }: PatientFormProps) {
             <FormItem>
               <FormLabel>Nome</FormLabel>
               <FormControl>
-                <Input placeholder="Patient Name" {...field} />
+                <Input placeholder="Nome do Paciente" {...field} />
               </FormControl>
             </FormItem>
           )}
@@ -96,7 +96,7 @@ export function PatientForm({ onClose }: PatientFormProps) {
           name="phone"
           render={({ field }) => (
             <FormItem className="flex flex-col items-start">
-              <FormLabel className="text-left">Phone Number</FormLabel>
+              <FormLabel className="text-left">Telemóvel</FormLabel>
               <FormControl className="w-full">
                 <PhoneInput
                   placeholder="Número de telefone"
