@@ -128,6 +128,9 @@ export default async function HomePage() {
             <Link href="/privacy" className="hover:text-primary transition-colors">
               Política de Privacidade
             </Link>
+            <Link href="/terms" className="hover:text-primary transition-colors">
+              Termos de Serviço
+            </Link>
             <span>© {new Date().getFullYear()} Elo. Todos os direitos reservados.</span>
           </div>
         </div>
