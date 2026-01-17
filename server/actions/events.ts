@@ -26,9 +26,9 @@ export async function createEvent(
 
     // Insert the validated event data into the database, linking it to the authenticated user
     await db.insert(events).values({ ...data, userId });
-  } catch (error: any) {
+  } catch (error) {
     // If any error occurs during the process, throw a new error with a readable message
-    throw new Error(`Failed to book appointment: ${error.message || error}`);
+    throw new Error(`Failed to book appointment: ${(error as Error).message || error}`);
   } finally {
     // Revalidate the '/events' path to ensure the page fetches fresh data after the database operation
     revalidatePath("/dashboard/calendar/events");
@@ -66,9 +66,9 @@ export async function updateEvent(
         "Event not found or user not authorized to update this event."
       );
     }
-  } catch (error: any) {
+  } catch (error) {
     // If any error occurs, throw a new error with a readable message
-    throw new Error(`Failed to update event: ${error.message || error}`);
+    throw new Error(`Failed to update event: ${(error as Error).message || error}`);
   } finally {
     // Revalidate the '/events' path to ensure the page fetches fresh data after the database operation
     revalidatePath("/dashboard/calendar/events");
@@ -100,9 +100,9 @@ export async function deleteEvent(
         "Event not found or user not authorized to delete this event."
       );
     }
-  } catch (error: any) {
+  } catch (error) {
     // If any error occurs, throw a new error with a readable message
-    throw new Error(`Failed to delete event: ${error.message || error}`);
+    throw new Error(`Failed to delete event: ${(error as Error).message || error}`);
   } finally {
     // Revalidate the '/events' path to ensure the page fetches fresh data after the database operation
     revalidatePath("/dashboard/calendar/events");

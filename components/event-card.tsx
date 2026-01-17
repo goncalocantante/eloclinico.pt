@@ -19,7 +19,7 @@ type EventCardProps = {
   name: string;
   description: string | null;
   durationInMinutes: number;
-  clerkUserId: string;
+  betterAuthUserId?: string;
 };
 
 // Component to display a single event card
@@ -29,7 +29,6 @@ export default function EventCard({
   name,
   description,
   durationInMinutes,
-  clerkUserId,
 }: EventCardProps) {
   return (
     <Card

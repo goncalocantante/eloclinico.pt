@@ -2,7 +2,7 @@
 import { eventFormSchema } from "./schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Resolver } from "react-hook-form";
-import { z } from "zod";
+
 import {
   Form,
   FormControl,
@@ -86,10 +86,10 @@ export default function EventForm({
     try {
       await action(values);
       router.push("/dashboard/calendar/events");
-    } catch (error: any) {
+    } catch (error) {
       // Handle any error that occurs during the action (e.g., network error)
       form.setError("root", {
-        message: `There was an error saving your event ${error.message}`,
+        message: `There was an error saving your event ${(error as Error).message}`,
       });
     }
   }
@@ -215,10 +215,10 @@ export default function EventForm({
                           // Attempt to delete the event by its ID
                           await deleteEvent(event.id);
                           router.push("/dashboard/calendar/events");
-                        } catch (error: any) {
+                        } catch (error) {
                           // If something goes wrong, show an error at the root level of the form
                           form.setError("root", {
-                            message: `There was an error deleting your event: ${error.message}`,
+                            message: `There was an error deleting your event: ${(error as Error).message}`,
                           });
                         }
                       });

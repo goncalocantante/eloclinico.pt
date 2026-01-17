@@ -35,7 +35,11 @@ export function DraggableEvent({ event, children }: DraggableEventProps) {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, [preview]);
 
-  drag(ref);
+  useEffect(() => {
+    if (ref.current) {
+        drag(ref);
+    }
+  }, [drag]);
 
   return (
     <div ref={ref} className={cn(isDragging && "opacity-40")}>

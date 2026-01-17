@@ -61,10 +61,10 @@ export async function createMeeting(
       eventId: data.eventId,
       startTime: data.startTime,
     };
-  } catch (error: any) {
+  } catch (error) {
     // Log the error message (or handle it based on your need)
-    console.error(`Error creating meeting: ${error.message || error}`);
+    console.error(`Error creating meeting: ${(error as Error).message || error}`);
     // Optionally throw the error to be handled further upstream
-    throw new Error(`Failed to create meeting: ${error.message || error}`);
+    throw new Error(`Failed to create meeting: ${(error as Error).message || error}`);
   }
 }

@@ -9,9 +9,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
-  title: "Psychologist App",
+  title: "Elo - Gestão de Consultório de Psicologia",
   description:
-    "Saas platform for psychologists to manage their practice with ease!",
+    "Otimize a sua prática de psicologia com o Elo. Agendamento, notas de pacientes e muito mais.",
 };
 
 export const viewport: Viewport = {
