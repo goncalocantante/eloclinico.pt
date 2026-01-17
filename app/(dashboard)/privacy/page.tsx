@@ -24,7 +24,7 @@ export default function PrivacyPolicy() {
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4">1. Introdução</h2>
           <p className="mb-4">
-            O <strong>Elo</strong> ("nós", "nosso" ou "nos") valoriza a sua privacidade. Esta Política de Privacidade explica como recolhemos, utilizamos, divulgamos e protegemos as suas informações quando utiliza a nossa aplicação web e serviços associados (coletivamente, o "Serviço").
+            O <strong>Elo</strong>valoriza a sua privacidade. Esta Política de Privacidade explica como recolhemos, utilizamos, divulgamos e protegemos as suas informações quando utiliza a nossa aplicação web e serviços associados (coletivamente, o &quot;Serviço&quot;).
           </p>
           <p>
             Ao aceder ou utilizar o Serviço, concorda com a recolha e utilização das suas informações de acordo com esta política.
