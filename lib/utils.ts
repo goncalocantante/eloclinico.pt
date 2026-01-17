@@ -22,6 +22,9 @@ export const getBaseUrl = () => {
   // 1. If we are in the browser, use the current relative path
   if (typeof window !== 'undefined') return '';
 
+  // 2. If a custom app URL is defined (e.g. for specific branches), use it
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+
   // 2. If we are on Vercel Production, use your specific custom domain
   if (process.env.VERCEL_ENV === 'production') return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL}`; 
 
