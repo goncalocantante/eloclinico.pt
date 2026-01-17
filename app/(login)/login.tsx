@@ -18,8 +18,8 @@ export function Login({ mode = "signin" }: { mode?: "signin" | "signup" }) {
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           {mode === "signin"
-            ? "Sign in to your account"
-            : "Create your account"}
+            ? "Iniciar sessão na sua conta"
+            : "Criar a sua conta"}
         </h2>
       </div>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -32,8 +32,8 @@ export function Login({ mode = "signin" }: { mode?: "signin" | "signup" }) {
             <div className="relative flex justify-center text-sm">
               <span className="px-2 bg-gray-50 text-gray-500">
                 {mode === "signin"
-                  ? "New to our platform?"
-                  : "Already have an account?"}
+                  ? "Novo na nossa plataforma?"
+                  : "Já tem uma conta?"}
               </span>
             </div>
           </div>
@@ -46,8 +46,8 @@ export function Login({ mode = "signin" }: { mode?: "signin" | "signup" }) {
               className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-full shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
             >
               {mode === "signin"
-                ? "Create an account"
-                : "Sign in to existing account"}
+                ? "Criar uma conta"
+                : "Iniciar sessão em conta existente"}
             </Link>
           </div>
         </div>

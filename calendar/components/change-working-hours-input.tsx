@@ -21,13 +21,13 @@ import {
 } from "@/components/ui/select";
 
 const DAYS_OF_WEEK = [
-  { dayOfWeek: "sunday", name: "Sunday" },
-  { dayOfWeek: "monday", name: "Monday" },
-  { dayOfWeek: "tuesday", name: "Tuesday" },
-  { dayOfWeek: "wednesday", name: "Wednesday" },
-  { dayOfWeek: "thursday", name: "Thursday" },
-  { dayOfWeek: "friday", name: "Friday" },
-  { dayOfWeek: "saturday", name: "Saturday" },
+  { dayOfWeek: "monday", name: "Segunda-feira" },
+  { dayOfWeek: "tuesday", name: "Terça-feira" },
+  { dayOfWeek: "wednesday", name: "Quarta-feira" },
+  { dayOfWeek: "thursday", name: "Quinta-feira" },
+  { dayOfWeek: "friday", name: "Sexta-feira" },
+  { dayOfWeek: "saturday", name: "Sábado" },
+  { dayOfWeek: "sunday", name: "Domingo" },
 ] as const;
 
 export function ChangeWorkingHoursInput() {
@@ -185,10 +185,10 @@ function WorkingHoursForm({ initialWorkingHours }: { initialWorkingHours: TWorki
       // Refetch schedule from database to ensure consistency
       await refetchSchedule();
 
-      toast.success("Working hours saved successfully");
+      toast.success("Horário de trabalho guardado com sucesso");
     } catch (error) {
       toast.error(
-        (error as Error).message || "Failed to save working hours. Please try again."
+        (error as Error).message || "Falha ao guardar horário de trabalho. Por favor tente novamente."
       );
     }
   };

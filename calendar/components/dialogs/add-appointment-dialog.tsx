@@ -156,7 +156,7 @@ export function AddAppointmentDialog({ children }: IProps) {
               name="patientId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Patient</FormLabel>
+                  <FormLabel>Paciente</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -169,7 +169,7 @@ export function AddAppointmentDialog({ children }: IProps) {
                             ? patients.find(
                                 (patient) => patient.id === field.value
                               )?.name
-                            : "Select patient"}
+                            : "Selecionar paciente"}
                           <ChevronsUpDown className="opacity-50" />
                         </Button>
                       </FormControl>
@@ -177,11 +177,11 @@ export function AddAppointmentDialog({ children }: IProps) {
                     <PopoverContent className="w-[200px] p-0">
                       <Command>
                         <CommandInput
-                          placeholder="Search patient..."
+                          placeholder="Pesquisar paciente..."
                           className="h-9"
                         />
                         <CommandList>
-                          <CommandEmpty>No patient found.</CommandEmpty>
+                          <CommandEmpty>Nenhum paciente encontrado.</CommandEmpty>
                           <CommandGroup>
                             {patients.map((patient) => (
                               <CommandItem
@@ -216,11 +216,11 @@ export function AddAppointmentDialog({ children }: IProps) {
               name="appointmentType"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel>Appointment Type</FormLabel>
+                  <FormLabel>Tipo de Consulta</FormLabel>
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger data-invalid={fieldState.invalid}>
-                        <SelectValue placeholder="Select an option" />
+                        <SelectValue placeholder="Selecionar opção" />
                       </SelectTrigger>
                       <SelectContent>
                         {appointmentTypes.map((type, index) => (
@@ -243,7 +243,7 @@ export function AddAppointmentDialog({ children }: IProps) {
                 name="startDate"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FormLabel htmlFor="startDate">Start Date</FormLabel>
+                    <FormLabel htmlFor="startDate">Data de Início</FormLabel>
                     <FormControl>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -254,7 +254,7 @@ export function AddAppointmentDialog({ children }: IProps) {
                           >
                             {field.value
                               ? field.value.toLocaleDateString()
-                              : "Select date"}
+                              : "Selecionar data"}
                             <ChevronDownIcon />
                           </Button>
                         </PopoverTrigger>
@@ -280,7 +280,7 @@ export function AddAppointmentDialog({ children }: IProps) {
                 name="startTime"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FormLabel>Start Time</FormLabel>
+                    <FormLabel>Hora de Início</FormLabel>
 
                     <FormControl>
                       <Input
@@ -300,7 +300,7 @@ export function AddAppointmentDialog({ children }: IProps) {
                 name="endTime"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FormLabel>End Time</FormLabel>
+                    <FormLabel>Hora de Fim</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
@@ -319,60 +319,60 @@ export function AddAppointmentDialog({ children }: IProps) {
               name="color"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel>Color</FormLabel>
+                  <FormLabel>Cor</FormLabel>
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger data-invalid={fieldState.invalid}>
-                        <SelectValue placeholder="Select an option" />
+                        <SelectValue placeholder="Selecionar opção" />
                       </SelectTrigger>
 
                       <SelectContent>
                         <SelectItem value="blue">
                           <div className="flex items-center gap-2">
                             <div className="size-3.5 rounded-full bg-blue-600" />
-                            Blue
+                            Azul
                           </div>
                         </SelectItem>
 
                         <SelectItem value="green">
                           <div className="flex items-center gap-2">
                             <div className="size-3.5 rounded-full bg-green-600" />
-                            Green
+                            Verde
                           </div>
                         </SelectItem>
 
                         <SelectItem value="red">
                           <div className="flex items-center gap-2">
                             <div className="size-3.5 rounded-full bg-red-600" />
-                            Red
+                            Vermelho
                           </div>
                         </SelectItem>
 
                         <SelectItem value="yellow">
                           <div className="flex items-center gap-2">
                             <div className="size-3.5 rounded-full bg-yellow-600" />
-                            Yellow
+                            Amarelo
                           </div>
                         </SelectItem>
 
                         <SelectItem value="purple">
                           <div className="flex items-center gap-2">
                             <div className="size-3.5 rounded-full bg-purple-600" />
-                            Purple
+                            Roxo
                           </div>
                         </SelectItem>
 
                         <SelectItem value="orange">
                           <div className="flex items-center gap-2">
                             <div className="size-3.5 rounded-full bg-orange-600" />
-                            Orange
+                            Laranja
                           </div>
                         </SelectItem>
 
                         <SelectItem value="gray">
                           <div className="flex items-center gap-2">
                             <div className="size-3.5 rounded-full bg-neutral-600" />
-                            Gray
+                            Cinzento
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -387,7 +387,7 @@ export function AddAppointmentDialog({ children }: IProps) {
               name="notes"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel>Notes</FormLabel>
+                  <FormLabel>Notas</FormLabel>
 
                   <FormControl>
                     <Textarea
