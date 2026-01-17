@@ -1,7 +1,6 @@
 import { BrainCircuit } from "lucide-react";
 
 const Logo = ({
-  size = 32,
   fontSize = 24,
 }: {
   size?: number;
