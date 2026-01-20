@@ -16,7 +16,7 @@ const Logo = ({
       </div>
       <span
         style={{ fontSize }}
-        className="font-bold tracking-tight text-slate-900 dark:text-slate-100"
+        className="font-bold tracking-tight text-slate-900 dark:text-slate-100 group-data-[collapsible=icon]:hidden"
       >
         Elo
       </span>
