@@ -1,5 +1,6 @@
 import PublicProfile from "@/components/public-profile";
 import { getUser } from "@/lib/db/queries/queries";
+import { notFound } from "next/navigation";
 
 export default async function PublicProfilePage({
   params,
@@ -8,9 +9,9 @@ export default async function PublicProfilePage({
 }) {
   const { userId } = await params;
 
-  const user = await getUser();
+  const user = await getUser(userId);
   if (!user) {
-    throw new Error("User is not authenticated");
+    return notFound();
   }
 
   const { name } = user; // Extract the user's full name

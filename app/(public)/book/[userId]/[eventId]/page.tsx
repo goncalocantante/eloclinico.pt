@@ -1,5 +1,5 @@
 import { getEvent } from "@/server/actions/events";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Clock, Calendar as CalendarIcon } from "lucide-react";
 import {
   addYears,
   eachMinuteOfInterval,
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card";
 import MeetingForm from "@/components/forms/meeting-form";
 import { getUser } from "@/lib/db/queries/queries";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default async function BookingPage({
   params,
@@ -37,7 +38,7 @@ export default async function BookingPage({
     );
 
   // Get the full user object from db
-  const user = await getUser();
+  const user = await getUser(userId);
   if (!user) {
     throw new Error("User is not authenticated");
   }
@@ -64,22 +65,50 @@ export default async function BookingPage({
   // Render the booking form with the list of valid available times
   // We&apos;re looking forward to seeing you!
   return (
-    <Card className="max-w-4xl mx-auto border-8 border-blue-200 shadow-2xl shadow-accent-foreground">
-      <CardHeader>
-        <CardTitle>
-          Book {event.name} with {user.name}
-        </CardTitle>
-        {event.description && (
-          <CardDescription>{event.description}</CardDescription>
-        )}
-      </CardHeader>
-      <CardContent>
-        <MeetingForm
-          validTimes={validTimes}
-          eventId={event.id}
-          userId={userId}
-        />
-      </CardContent>
-    </Card>
+    <div className="max-w-4xl mx-auto p-6 md:p-10">
+      <Card className="border-none shadow-none md:border md:shadow-sm">
+        <CardHeader className="text-center space-y-4 pb-8 border-b">
+          <div className="flex justify-center">
+            <Avatar className="h-20 w-20 border-4 border-white shadow-md">
+              <AvatarImage
+                src={`https://api.dicebear.com/9.x/initials/svg?seed=${user.name}`}
+              />
+              <AvatarFallback>
+                {user.name
+                  ?.split(" ")
+                  .map((n: string) => n[0])
+                  .join("")}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+          <div className="space-y-2">
+            <CardTitle className="text-2xl md:text-3xl">
+              Book {event.name}
+            </CardTitle>
+            <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
+              <span className="flex items-center gap-1">
+                <Clock className="w-4 h-4" /> {event.durationInMinutes} mins
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1">
+                <CalendarIcon className="w-4 h-4" /> with {user.name}
+              </span>
+            </div>
+          </div>
+          {event.description && (
+            <CardDescription className="max-w-lg mx-auto text-base">
+              {event.description}
+            </CardDescription>
+          )}
+        </CardHeader>
+        <CardContent className="pt-8">
+          <MeetingForm
+            validTimes={validTimes}
+            eventId={event.id}
+            userId={userId}
+          />
+        </CardContent>
+      </Card>
+    </div>
   );
 }

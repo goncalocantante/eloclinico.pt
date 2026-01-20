@@ -119,12 +119,13 @@ export default function MeetingForm({
         )}
 
         {/* Timezone selection field */}
+            {/* Timezone selection field */}
         <FormField
           control={form.control}
           name="timezone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Timezone</FormLabel>
+              <FormLabel>Fuso Horário</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -154,7 +155,7 @@ export default function MeetingForm({
             render={({ field }) => (
               <Popover>
                 <FormItem className="flex-1">
-                  <FormLabel>Date</FormLabel>
+                  <FormLabel>Data</FormLabel>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
@@ -167,7 +168,7 @@ export default function MeetingForm({
                         {field.value ? (
                           formatDate(field.value)
                         ) : (
-                          <span>Pick a date</span>
+                          <span>Escolha uma data</span>
                         )}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
@@ -199,7 +200,7 @@ export default function MeetingForm({
             name="startTime"
             render={({ field }) => (
               <FormItem className="flex-1">
-                <FormLabel>Time</FormLabel>
+                <FormLabel>Hora</FormLabel>
                 <Select
                   disabled={date == null || timezone == null}
                   onValueChange={(value) =>
@@ -212,8 +213,8 @@ export default function MeetingForm({
                       <SelectValue
                         placeholder={
                           date == null || timezone == null
-                            ? "Select a date/timezone first"
-                            : "Select a meeting time"
+                            ? "Selecione uma data primeiro"
+                            : "Selecione um horário"
                         }
                       />
                     </SelectTrigger>
@@ -245,7 +246,7 @@ export default function MeetingForm({
             name="guestName"
             render={({ field }) => (
               <FormItem className="flex-1">
-                <FormLabel>Your Name</FormLabel>
+                <FormLabel>Seu Nome</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -260,7 +261,7 @@ export default function MeetingForm({
             name="guestEmail"
             render={({ field }) => (
               <FormItem className="flex-1">
-                <FormLabel>Your Email</FormLabel>
+                <FormLabel>Seu Email</FormLabel>
                 <FormControl>
                   <Input type="email" {...field} />
                 </FormControl>
@@ -276,7 +277,7 @@ export default function MeetingForm({
           name="guestNotes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Notes</FormLabel>
+              <FormLabel>Notas</FormLabel>
               <FormControl>
                 <Textarea className="resize-none" {...field} />
               </FormControl>
@@ -296,11 +297,11 @@ export default function MeetingForm({
             <Link href={`/book/${userId}`}>Cancelar</Link>
           </Button>
           <Button
-            className="cursor-pointer hover:scale-105 bg-blue-400 hover:bg-blue-600"
+            className="cursor-pointer hover:scale-105"
             disabled={form.formState.isSubmitting}
             type="submit"
           >
-            Agendar Evento
+            Agendar Consulta
           </Button>
         </div>
       </form>
