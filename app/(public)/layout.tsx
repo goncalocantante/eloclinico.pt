@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, LogOut } from "lucide-react";
+import { Home, LogOut, ArrowLeft } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -92,6 +92,26 @@ function Header() {
   );
 }
 
+function BackButton() {
+  const { data: user } = useSWR<User>("/api/user", fetcher);
+
+  if (!user) return null;
+
+  return (
+    <div className="max-w-7xl px-4 sm:px-6 lg:px-8 pt-4">
+      <Button variant="ghost" asChild className="pl-0 hover:bg-transparent">
+        <Link
+          href="/dashboard"
+          className="flex items-center text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar ao Painel
+        </Link>
+      </Button>
+    </div>
+  );
+}
+
 export default function PublicLayout({
   children,
 }: {
@@ -100,6 +120,7 @@ export default function PublicLayout({
   return (
     <section className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
+      <BackButton />
       <main className="flex-1">{children}</main>
     </section>
   );

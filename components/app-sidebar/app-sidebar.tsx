@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { SquareTerminal, Calendar } from "lucide-react";
+import { SquareTerminal, Calendar, ExternalLink } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { NavMain } from "@/components/app-sidebar/nav-main";
@@ -56,13 +56,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return null;
   }
 
+  const publicItems = [
+    {
+      title: "Ver perfil",
+      url: `/book/${user.id}`,
+      icon: ExternalLink,
+    },
+  ];
+
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="pt-8 pb-4">
         <Logo />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} />
+        <NavMain label="Público" items={publicItems} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser
