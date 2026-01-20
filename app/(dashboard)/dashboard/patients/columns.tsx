@@ -11,13 +11,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Trash2, CalendarClock, MoreHorizontalIcon } from "lucide-react";
+import { Trash2, CalendarClock, MoreHorizontalIcon, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deletePatient } from "@/server/actions/patients";
 import { toast } from "sonner";
 
 import { useConfirm } from "@/contexts/confirm-action-context";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
+
+import Link from "next/link";
 
 export const columns: ColumnDef<Patient>[] = [
   {
@@ -101,6 +103,15 @@ function PatientActions({ patient }: { patient: Patient }) {
           >
             <CalendarClock />
             Agendar
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link
+              href={`/dashboard/patients/${patient.id}`}
+              className="cursor-pointer w-full flex items-center gap-2"
+            >
+              <User className="h-4 w-4" />
+              Ver Perfil
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleDelete}>
             <Trash2 />
