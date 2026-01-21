@@ -1,1 +1,1 @@
-ALTER TABLE "events" ADD COLUMN "color" "color_enum" DEFAULT 'blue' NOT NULL;
+ALTER TABLE "events" ADD COLUMN IF NOT EXISTS "color" "color_enum" DEFAULT 'blue' NOT NULL;
