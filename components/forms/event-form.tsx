@@ -26,6 +26,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import { Button } from "../ui/button";
 import { useTransition } from "react";
 import Link from "next/link";
@@ -46,6 +53,7 @@ export default function EventForm({
     description?: string; // Optional description of the event
     durationInMinutes: number; // Duration of the event in minutes
     isActive: boolean; // Indicates whether the event is currently active
+    color: "blue" | "green" | "red" | "yellow" | "purple" | "orange" | "gray";
   };
 }) {
   // useTransition is a React hook that helps manage the state of transitions in async operations
@@ -61,22 +69,24 @@ export default function EventForm({
     isActive: boolean;
     durationInMinutes: number;
     description?: string;
+    color: "blue" | "green" | "red" | "yellow" | "purple" | "orange" | "gray";
   };
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema) as Resolver<EventFormValues>, // Validate with Zod schema
     defaultValues: event
       ? {
-          // If `event` is provided (edit mode), spread its existing properties as default values
-          ...event,
-        }
+        // If `event` is provided (edit mode), spread its existing properties as default values
+        ...event,
+      }
       : {
-          // If `event` is not provided (create mode), use these fallback defaults
-          isActive: true, // New events are active by default
-          durationInMinutes: 30, // Default duration is 30 minutes
-          description: "", // Ensure controlled input: default to empty string
-          name: "", // Ensure controlled input: default to empty string
-        },
+        // If `event` is not provided (create mode), use these fallback defaults
+        isActive: true, // New events are active by default
+        durationInMinutes: 30, // Default duration is 30 minutes
+        description: "", // Ensure controlled input: default to empty string
+        name: "", // Ensure controlled input: default to empty string
+        color: "blue", // Default color
+      },
   });
 
   // Handle form submission
@@ -126,20 +136,88 @@ export default function EventForm({
         />
 
         {/* Duration Field */}
-        <FormField
-          control={form.control}
-          name="durationInMinutes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Duration</FormLabel>
-              <FormControl>
-                <Input type="number" {...field} />
-              </FormControl>
-              <FormDescription>In minutes</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="flex gap-4">
+          <FormField
+            control={form.control}
+            name="durationInMinutes"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>Duration</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} />
+                </FormControl>
+                <FormDescription>In minutes</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="color"
+            render={({ field, fieldState }) => (
+              <FormItem className="flex-1">
+                <FormLabel>Color</FormLabel>
+                <FormControl>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger aria-invalid={fieldState.invalid}>
+                      <SelectValue placeholder="Select color" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="blue">
+                        <div className="flex items-center gap-2">
+                          <div className="size-3.5 rounded-full bg-blue-600" />
+                          Blue
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="green">
+                        <div className="flex items-center gap-2">
+                          <div className="size-3.5 rounded-full bg-green-600" />
+                          Green
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="red">
+                        <div className="flex items-center gap-2">
+                          <div className="size-3.5 rounded-full bg-red-600" />
+                          Red
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="yellow">
+                        <div className="flex items-center gap-2">
+                          <div className="size-3.5 rounded-full bg-yellow-600" />
+                          Yellow
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="purple">
+                        <div className="flex items-center gap-2">
+                          <div className="size-3.5 rounded-full bg-purple-600" />
+                          Purple
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="orange">
+                        <div className="flex items-center gap-2">
+                          <div className="size-3.5 rounded-full bg-orange-600" />
+                          Orange
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="gray">
+                        <div className="flex items-center gap-2">
+                          <div className="size-3.5 rounded-full bg-neutral-600" />
+                          Gray
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormDescription>Event color</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {/* Optional Description Field */}
         <FormField

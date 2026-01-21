@@ -1,6 +1,7 @@
 "use client";
 
-import { parseISO } from "date-fns";
+import { addMinutes, format, parseISO } from "date-fns";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
   Check,
@@ -99,6 +100,33 @@ export function EditAppointmentDialog({ children, event }: IProps) {
     },
   });
 
+  const watchedAppointmentTypeId = form.watch("appointmentType");
+  const watchedStartTime = form.watch("startTime");
+
+  useEffect(() => {
+    if (watchedAppointmentTypeId && appointmentTypes) {
+      const selectedType = appointmentTypes.find(
+        (t) => t.id === watchedAppointmentTypeId
+      );
+
+      if (selectedType) {
+        if (selectedType.color) {
+          form.setValue("color", selectedType.color);
+        }
+
+        if (watchedStartTime) {
+          const [hours, minutes] = watchedStartTime.split(":").map(Number);
+          const date = new Date();
+          date.setHours(hours);
+          date.setMinutes(minutes);
+
+          const endDate = addMinutes(date, selectedType.durationInMinutes);
+          form.setValue("endTime", format(endDate, "HH:mm"));
+        }
+      }
+    }
+  }, [watchedAppointmentTypeId, watchedStartTime, appointmentTypes, form]);
+
   const onSubmit = async (values: TEventFormData) => {
     console.log("Form submitted with values: ", values);
     const patientName = patients.find(
@@ -150,8 +178,8 @@ export function EditAppointmentDialog({ children, event }: IProps) {
                         >
                           {field.value
                             ? patients.find(
-                                (patient) => patient.id === field.value
-                              )?.name
+                              (patient) => patient.id === field.value
+                            )?.name
                             : "Select patient"}
                           <ChevronsUpDown className="opacity-50" />
                         </Button>
@@ -202,7 +230,7 @@ export function EditAppointmentDialog({ children, event }: IProps) {
                   <FormLabel>Appointment Type</FormLabel>
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger data-invalid={fieldState.invalid}>
+                      <SelectTrigger className="w-full" aria-invalid={fieldState.invalid}>
                         <SelectValue placeholder="Select an option" />
                       </SelectTrigger>
                       <SelectContent>
@@ -227,9 +255,9 @@ export function EditAppointmentDialog({ children, event }: IProps) {
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormLabel htmlFor="startDate">Start Date</FormLabel>
-                    <FormControl>
-                      <Popover>
-                        <PopoverTrigger asChild>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
                           <Button
                             variant="outline"
                             id="date"
@@ -240,20 +268,20 @@ export function EditAppointmentDialog({ children, event }: IProps) {
                               : "Select date"}
                             <ChevronDownIcon />
                           </Button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          className="w-auto overflow-hidden p-0"
-                          align="start"
-                        >
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            captionLayout="dropdown"
-                            onSelect={field.onChange}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </FormControl>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-auto overflow-hidden p-0"
+                        align="start"
+                      >
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          captionLayout="dropdown"
+                          onSelect={field.onChange}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -269,8 +297,8 @@ export function EditAppointmentDialog({ children, event }: IProps) {
                       <Input
                         {...field}
                         type="time"
-                        // step="1"
-                        // className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                      // step="1"
+                      // className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                       />
                     </FormControl>
 
@@ -288,8 +316,8 @@ export function EditAppointmentDialog({ children, event }: IProps) {
                       <Input
                         {...field}
                         type="time"
-                        // step="1"
-                        // className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                      // step="1"
+                      // className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                       />
                     </FormControl>
                     <FormMessage />
@@ -305,7 +333,7 @@ export function EditAppointmentDialog({ children, event }: IProps) {
                   <FormLabel>Color</FormLabel>
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger data-invalid={fieldState.invalid}>
+                      <SelectTrigger aria-invalid={fieldState.invalid}>
                         <SelectValue placeholder="Select an option" />
                       </SelectTrigger>
 
@@ -368,7 +396,7 @@ export function EditAppointmentDialog({ children, event }: IProps) {
             <FormField
               control={form.control}
               name="notes"
-              render={({ field, fieldState }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Notes</FormLabel>
 
@@ -376,7 +404,6 @@ export function EditAppointmentDialog({ children, event }: IProps) {
                     <Textarea
                       {...field}
                       value={field.value}
-                      data-invalid={fieldState.invalid}
                     />
                   </FormControl>
 
