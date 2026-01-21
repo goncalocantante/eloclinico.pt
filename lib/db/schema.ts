@@ -121,6 +121,7 @@ export const schedules = pgTable("schedules", {
     .references(() => users.id)
     .notNull()
     .unique(),
+  googleCalendarId: text("google_calendar_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -180,6 +181,7 @@ export const appointments = pgTable("appointments", {
   eventId: uuid("event_id")
     .notNull()
     .references(() => events.id, { onDelete: "cascade" }),
+  googleEventId: text("google_event_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
