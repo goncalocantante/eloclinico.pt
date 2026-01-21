@@ -89,7 +89,9 @@ export const verifications = pgTable("verifications", {
     .notNull(),
 });
 
-// SCHEDULING TABLES
+// APPOINTMENT TABLES
+export const appointmentColorEnum = pgEnum("color_enum", APPOINTMENT_COLOR);
+
 export const events = pgTable(
   "events",
   {
@@ -97,6 +99,7 @@ export const events = pgTable(
     name: text("name").notNull(),
     description: text("description"),
     durationInMinutes: integer("duration_in_minutes").notNull(),
+    color: appointmentColorEnum("color").notNull().default("blue"),
     userId: uuid("user_id")
       .references(() => users.id)
       .notNull(),
@@ -109,6 +112,7 @@ export const events = pgTable(
   },
   (table) => [index("userIdIndex").on(table.userId)]
 );
+
 
 export const schedules = pgTable("schedules", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -155,7 +159,6 @@ export const scheduleAvailabilityRelations = relations(
 );
 
 // APPOINTMENT TABLES
-export const appointmentColorEnum = pgEnum("color_enum", APPOINTMENT_COLOR);
 
 export const appointments = pgTable("appointments", {
   id: uuid("id").primaryKey().defaultRandom(),

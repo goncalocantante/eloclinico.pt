@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { Check, ChevronDownIcon, ChevronsUpDown } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useSWR from "swr";
+import { addMinutes, format } from "date-fns";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 import { fetcher } from "@/lib/utils";
@@ -128,6 +129,33 @@ export function AddAppointmentDialog({ children }: IProps) {
     form,
   ]);
 
+  const watchedAppointmentTypeId = form.watch("appointmentType");
+  const watchedStartTime = form.watch("startTime");
+
+  useEffect(() => {
+    if (watchedAppointmentTypeId && appointmentTypes) {
+      const selectedType = appointmentTypes.find(
+        (t) => t.id === watchedAppointmentTypeId
+      );
+
+      if (selectedType) {
+        if (selectedType.color) {
+          form.setValue("color", selectedType.color);
+        }
+
+        if (watchedStartTime) {
+          const [hours, minutes] = watchedStartTime.split(":").map(Number);
+          const date = new Date();
+          date.setHours(hours);
+          date.setMinutes(minutes);
+
+          const endDate = addMinutes(date, selectedType.durationInMinutes);
+          form.setValue("endTime", format(endDate, "HH:mm"));
+        }
+      }
+    }
+  }, [watchedAppointmentTypeId, watchedStartTime, appointmentTypes, form]);
+
   return (
     <Dialog
       open={isAddAppointmentDialogOpen}
@@ -167,8 +195,8 @@ export function AddAppointmentDialog({ children }: IProps) {
                         >
                           {field.value
                             ? patients.find(
-                                (patient) => patient.id === field.value
-                              )?.name
+                              (patient) => patient.id === field.value
+                            )?.name
                             : "Selecionar paciente"}
                           <ChevronsUpDown className="opacity-50" />
                         </Button>
@@ -219,8 +247,8 @@ export function AddAppointmentDialog({ children }: IProps) {
                   <FormLabel>Tipo de Consulta</FormLabel>
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger data-invalid={fieldState.invalid}>
-                        <SelectValue placeholder="Selecionar opção" />
+                      <SelectTrigger className="w-full" aria-invalid={fieldState.invalid}>
+                        <SelectValue placeholder="Selecionar tipo de consulta" />
                       </SelectTrigger>
                       <SelectContent>
                         {appointmentTypes.map((type, index) => (
@@ -244,9 +272,9 @@ export function AddAppointmentDialog({ children }: IProps) {
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormLabel htmlFor="startDate">Data de Início</FormLabel>
-                    <FormControl>
-                      <Popover>
-                        <PopoverTrigger asChild>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
                           <Button
                             variant="outline"
                             id="date"
@@ -257,20 +285,20 @@ export function AddAppointmentDialog({ children }: IProps) {
                               : "Selecionar data"}
                             <ChevronDownIcon />
                           </Button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          className="w-auto overflow-hidden p-0"
-                          align="start"
-                        >
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            captionLayout="dropdown"
-                            onSelect={field.onChange}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </FormControl>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-auto overflow-hidden p-0"
+                        align="start"
+                      >
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          captionLayout="dropdown"
+                          onSelect={field.onChange}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -286,8 +314,8 @@ export function AddAppointmentDialog({ children }: IProps) {
                       <Input
                         {...field}
                         type="time"
-                        // step="1"
-                        // className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                      // step="1"
+                      // className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                       />
                     </FormControl>
 
@@ -305,8 +333,8 @@ export function AddAppointmentDialog({ children }: IProps) {
                       <Input
                         {...field}
                         type="time"
-                        // step="1"
-                        // className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                      // step="1"
+                      // className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                       />
                     </FormControl>
                     <FormMessage />
@@ -322,7 +350,7 @@ export function AddAppointmentDialog({ children }: IProps) {
                   <FormLabel>Cor</FormLabel>
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger data-invalid={fieldState.invalid}>
+                      <SelectTrigger aria-invalid={fieldState.invalid}>
                         <SelectValue placeholder="Selecionar opção" />
                       </SelectTrigger>
 
@@ -385,7 +413,7 @@ export function AddAppointmentDialog({ children }: IProps) {
             <FormField
               control={form.control}
               name="notes"
-              render={({ field, fieldState }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Notas</FormLabel>
 
@@ -393,7 +421,6 @@ export function AddAppointmentDialog({ children }: IProps) {
                     <Textarea
                       {...field}
                       value={field.value}
-                      data-invalid={fieldState.invalid}
                     />
                   </FormControl>
 

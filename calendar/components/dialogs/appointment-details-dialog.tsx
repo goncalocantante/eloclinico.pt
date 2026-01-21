@@ -110,6 +110,18 @@ export function EventDetailsDialog({ event, children }: IProps) {
                 <p className="text-sm text-muted-foreground">{event.notes}</p>
               </div>
             </div>
+
+            <div className="flex items-start gap-2">
+              <div
+                className={`mt-1 size-4 shrink-0 rounded-full bg-${event.color}-600`}
+              />
+              <div>
+                <p className="text-sm font-medium">Color</p>
+                <p className="text-sm text-muted-foreground capitalize">
+                  {event.color}
+                </p>
+              </div>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
