@@ -17,7 +17,7 @@ export const auth = betterAuth({
       accessType: "offline",
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      scope: ["https://www.googleapis.com/auth/calendar.events", "openid", "profile", "email"], // added basic scopes
+      scope: ["https://www.googleapis.com/auth/calendar", "openid", "profile", "email"], // updated to full calendar access
     },
   },
   user: {
