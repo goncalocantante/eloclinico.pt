@@ -4,11 +4,11 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db/drizzle";
 
 import { eventSchema } from "@/calendar/schemas";
-import { appointments, patients } from "@/lib/db/schema";
+import { appointments, patients, schedules } from "@/lib/db/schema";
 import { getUser } from "@/lib/db/queries/queries";
 import { getSchedule } from "@/server/actions/schedule";
 import { getPublicEvents } from "@/server/actions/events";
-import { createCalendarEvent } from "@/server/google/googleCalendar";
+import { createCalendarEvent, createSecondaryCalendar, deleteCalendarEvent } from "@/server/google/googleCalendar";
 
 export const createAppointment = async (data: unknown) => {
   const user = await getUser();
@@ -57,6 +57,40 @@ export const createAppointment = async (data: unknown) => {
   startDateTime.setHours(startHours, startMinutes);
   endDateTime.setHours(endHours, endMinutes);
 
+  const patient = await db.query.patients.findFirst({
+    where: eq(patients.id, result.data.patientId),
+  });
+
+  if (!patient) {
+    throw new Error("Patient not found");
+  }
+
+  // Handle Google Calendar Logic
+  let googleCalendarId = schedule.googleCalendarId;
+
+  if (!googleCalendarId) {
+    // Create a secondary calendar for the app if it doesn't exist
+    const newCalendar = await createSecondaryCalendar(user.id, "Elo App");
+    googleCalendarId = newCalendar.id || "primary";
+
+    // Update the schedule with the new calendar ID
+    await db
+      .update(schedules)
+      .set({ googleCalendarId })
+      .where(eq(schedules.id, schedule.id));
+  }
+
+  // create event in google calendar
+  const googleEvent = await createCalendarEvent({
+    userId: user.id,
+    guestName: patient.name || "",
+    guestEmail: patient.email || "",
+    startTime: startDateTime,
+    durationInMinutes: event.durationInMinutes || 0,
+    eventName: result.data.title || "",
+    calendarId: googleCalendarId,
+  });
+
   const dbData = {
     userId: user.id,
     patientId: result.data.patientId,
@@ -68,27 +102,11 @@ export const createAppointment = async (data: unknown) => {
     color: result.data.color || "blue",
     scheduleId: schedule.id,
     eventId: event.id,
+    googleEventId: googleEvent.id,
   };
 
   const res = await db.insert(appointments).values(dbData).returning();
 
-  const patient = await db.query.patients.findFirst({
-    where: eq(patients.id, result.data.patientId),
-  });
-
-  if (!patient) {
-    throw new Error("Patient not found");
-  }
-
-  // create event in google calendar
-  await createCalendarEvent({
-    userId: user.id,
-    guestName: patient.name || "",
-    guestEmail: patient.email || "",
-    startTime: startDateTime,
-    durationInMinutes: event.durationInMinutes || 0,
-    eventName: result.data.title || "",
-  });
   return res;
 };
 
@@ -179,6 +197,18 @@ export const deleteAppointment = async (id: string) => {
       success: false,
       error: "Appointment not found or you don't have permission to delete it.",
     };
+  }
+
+  // Delete from Google Calendar if linked
+  if (appointment.googleEventId) {
+    const schedule = await getSchedule(user.id);
+    if (schedule && schedule.googleCalendarId) {
+      await deleteCalendarEvent(
+        user.id,
+        schedule.googleCalendarId,
+        appointment.googleEventId
+      );
+    }
   }
 
   // Delete the appointment

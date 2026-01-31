@@ -104,6 +104,7 @@ export async function createCalendarEvent({
   guestNotes,
   durationInMinutes,
   eventName,
+  calendarId = "primary",
 }: {
   userId: string; // The unique ID of the Clerk user.
   guestName: string; // The name of the guest attending the event.
@@ -112,6 +113,7 @@ export async function createCalendarEvent({
   guestNotes?: string | null; // Optional notes for the guest (can be null or undefined).
   durationInMinutes: number; // The duration of the event in minutes.
   eventName: string; // The name or title of the event.
+  calendarId?: string; // The ID of the calendar to create the event in (default: "primary")
 }): Promise<calendar_v3.Schema$Event> {
   // Specify the return type as `Event`, which represents the created calendar event.
 
@@ -134,7 +136,7 @@ export async function createCalendarEvent({
 
     // Create the Google Calendar event using the Google API client.
     const calendarEvent = await google.calendar("v3").events.insert({
-      calendarId: "primary", // Use the primary calendar of the user.
+      calendarId: calendarId, // Use the specified calendar ID or default to "primary"
       auth: oAuthClient, // Authentication using the OAuth client obtained earlier.
       sendUpdates: "all", // Send email notifications to all attendees of the event.
       requestBody: {
@@ -166,5 +168,48 @@ export async function createCalendarEvent({
     throw new Error(
       `Failed to create calendar event: ${(error as Error).message || error}`
     ); // Throw a new error with a detailed message.
+  }
+}
+
+export async function createSecondaryCalendar(userId: string, summary: string) {
+  try {
+    const oAuthClient = await getOAuthClient(userId);
+    if (!oAuthClient) {
+      throw new Error("OAuth client could not be obtained.");
+    }
+
+    const calendar = await google.calendar("v3").calendars.insert({
+      auth: oAuthClient,
+      requestBody: {
+        summary,
+      },
+    });
+
+    return calendar.data;
+  } catch (error) {
+    console.error("Error creating secondary calendar:", (error as Error).message || error);
+    throw new Error(`Failed to create secondary calendar: ${(error as Error).message || error}`);
+  }
+}
+
+export async function deleteCalendarEvent(userId: string, calendarId: string, eventId: string) {
+  try {
+    const oAuthClient = await getOAuthClient(userId);
+    if (!oAuthClient) {
+      throw new Error("OAuth client could not be obtained.");
+    }
+
+    await google.calendar("v3").events.delete({
+      auth: oAuthClient,
+      calendarId,
+      eventId,
+      sendUpdates: "all",
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting calendar event:", (error as Error).message || error);
+    // don't throw, just return success false or log, as the event might already be gone
+    return { success: false, error: (error as Error).message };
   }
 }
