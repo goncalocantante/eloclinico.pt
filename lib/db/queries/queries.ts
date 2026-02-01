@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { db } from "@/lib/db/drizzle";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { DEMO_USER_EMAIL } from "@/constants";
 
 export async function getUser(userId?: string) {
   if (userId) {
@@ -26,8 +27,8 @@ export async function getUser(userId?: string) {
   });
 
   if (!session || session.user.deletedAt) return null;
-  // TODO - check for verified email
-  // if (!session || !session.user.emailVerified ) return null;
-
+  if (!session.user.emailVerified && session.user.email !== DEMO_USER_EMAIL) {
+    return null;
+  }
   return session.user;
 }

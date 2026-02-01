@@ -1,18 +1,34 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getSessionCookie } from "better-auth/cookies";
+import { betterFetch } from "@better-fetch/fetch";
+import type { Session } from "better-auth/types";
+import { NextResponse, type NextRequest } from "next/server";
 
-const protectedRoutes = "/dashboard";
-
-export async function proxy(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const sessionCookie = getSessionCookie(request);
-  const isProtectedRoute = pathname.startsWith(protectedRoutes);
+  
+  // Skip auth check for public assets and api/auth routes
+  if (pathname.startsWith("/api/auth") || pathname.includes(".")) {
+    return NextResponse.next();
+  }
 
-  // THIS IS NOT SECURE!
-  // This is the recommended approach to optimistically redirect users
-  // We recommend handling auth checks in each page/route
-  if (isProtectedRoute && !sessionCookie) {
+  const { data: session } = await betterFetch<Session>(
+    "/api/auth/get-session",
+    {
+      baseURL: request.nextUrl.origin,
+      headers: {
+        cookie: request.headers.get("cookie") || "",
+      },
+      throw: false, // Don't throw on error, just return null session
+    }
+  );
+
+  // Define protected paths
+  const isDashboard = pathname.startsWith("/dashboard");
+  const isProtectedApi = pathname.startsWith("/api") && !pathname.startsWith("/api/auth");
+
+  if ((isDashboard || isProtectedApi) && !session) {
+    if (pathname.startsWith("/api")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
@@ -20,5 +36,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"]
+  matcher: ["/dashboard/:path*", "/api/:path*"],
 };
