@@ -41,7 +41,6 @@ This repository demonstrates a commitment to "Production-Grade" engineering stan
 
 I am currently operating in a **Closed Beta** phase.
 *   **Q1 Focus:** Conducting user interviews with pilot psychologists to refine the scheduling and notes interface.
-*   **Upcoming:** Automated invoicing integration and enhanced patient portal features.
 
 ## 💻 Local Setup
 
