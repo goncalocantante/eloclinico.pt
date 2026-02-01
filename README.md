@@ -45,12 +45,10 @@ I am currently operating in a **Closed Beta** phase.
 
 ## 💻 Local Setup
 
-To run the project locally for development or review:
-
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/goncalocantante/psychologists-app.git
-    cd psychologists-app
+    git clone https://github.com/goncalocantante/eloclinico.pt.git
+    cd eloclinico.pt
     ```
 
 2.  **Install dependencies:**
@@ -58,15 +56,14 @@ To run the project locally for development or review:
     pnpm install
     ```
 
-3.  **Environment Setup:**
-    Duplicate `.env.example` to `.env` and populate the required API keys (Database URL, Google Client ID, etc.).
-    ```bash
-    cp .env.example .env
-    ```
-
-4.  **Database Initialization:**
+3.  **Run Setup Wizard:**
+    This command will guide you through setting up the database (local Docker or remote), configuring environment variables, and setting up Google OAuth.
     ```bash
     pnpm db:setup
+    ```
+
+4.  **Database Migration & Seed:**
+    ```bash
     pnpm db:migrate
     pnpm db:seed
     ```
