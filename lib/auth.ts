@@ -20,6 +20,9 @@ export const auth = betterAuth({
       scope: ["https://www.googleapis.com/auth/calendar", "openid", "profile", "email"], // updated to full calendar access
     },
   },
+  emailAndPassword: {
+    enabled: true,
+  },
   user: {
     additionalFields: {
       role: {

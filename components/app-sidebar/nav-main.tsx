@@ -37,8 +37,8 @@ export function NavMain({
       <SidebarMenu>
         {items.map((item) => {
           return (
-            <>
-              <SidebarMenuItem key={item.title}>
+            <div key={item.title}>
+              <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={item.isActive}>
                   <Link href={item.url}>
                     {item.icon && <item.icon />}
@@ -59,7 +59,7 @@ export function NavMain({
                   ))}
                 </SidebarMenuSub>
               )}
-            </>
+            </div>
           );
         })}
       </SidebarMenu>

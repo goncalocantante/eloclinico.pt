@@ -17,3 +17,6 @@ export const APPOINTMENT_COLOR = [
   "orange",
   "gray",
 ] as const;
+
+export const DEMO_USER_EMAIL = "demo@eloclinico.pt";
+export const DEMO_USER_PASSWORD = "password123"; // Kept here for seed consistency

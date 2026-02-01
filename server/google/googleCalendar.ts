@@ -18,9 +18,10 @@ async function getOAuthClient(betterAuthUserId: string) {
       },
     });
 
-    // Check if the data is empty or the token is missing, throw an error
+    // Check if the data is empty or the token is missing
     if (!data || !data?.accessToken) {
-      throw new Error("No OAuth data or token found for the user.");
+      console.warn("No OAuth data or token found for the user. Proceeding without Google integration.");
+      return null;
     }
 
     // Initialize OAuth2 client with Google credentials (client ID and secret are required)
@@ -34,8 +35,9 @@ async function getOAuthClient(betterAuthUserId: string) {
 
     return oAuthClient;
   } catch (err) {
-    // Catch any errors and rethrow with a detailed message
-    throw new Error(`Failed to get OAuth client: ${(err as Error).message}`);
+    // Return null instead of throwing to allow the app to function without Google
+    console.warn(`Failed to get OAuth client: ${(err as Error).message}`);
+    return null;
   }
 }
 
@@ -49,7 +51,7 @@ export async function getCalendarEventTimes(
     const oAuthClient = await getOAuthClient(userId);
 
     if (!oAuthClient) {
-      throw new Error("OAuth client could not be obtained.");
+      return [];
     }
 
     // Fetch events from the Google Calendar API
@@ -92,7 +94,8 @@ export async function getCalendarEventTimes(
         ) || []
     );
   } catch (err) {
-    throw new Error(`Failed to fetch calendar events: ${(err as Error).message || err}`);
+    console.error(`Failed to fetch calendar events: ${(err as Error).message || err}`);
+    return [];
   }
 }
 
@@ -114,14 +117,14 @@ export async function createCalendarEvent({
   durationInMinutes: number; // The duration of the event in minutes.
   eventName: string; // The name or title of the event.
   calendarId?: string; // The ID of the calendar to create the event in (default: "primary")
-}): Promise<calendar_v3.Schema$Event> {
+}): Promise<calendar_v3.Schema$Event | null> {
   // Specify the return type as `Event`, which represents the created calendar event.
 
   try {
     // Get OAuth client and user information for Google Calendar integration.
     const oAuthClient = await getOAuthClient(userId);
     if (!oAuthClient) {
-      throw new Error("OAuth client could not be obtained."); // Error handling if OAuth client is not available.
+      return null;
     }
 
     const calendarUser = await db.query.users.findFirst({
@@ -165,9 +168,8 @@ export async function createCalendarEvent({
   } catch (error) {
     // Catch and handle any errors that occur during the process.
     console.error("Error creating calendar event:", (error as Error).message || error); // Log the error to the console.
-    throw new Error(
-      `Failed to create calendar event: ${(error as Error).message || error}`
-    ); // Throw a new error with a detailed message.
+    // Return null instead of throwing to avoid breaking the application flow
+    return null;
   }
 }
 
@@ -175,7 +177,7 @@ export async function createSecondaryCalendar(userId: string, summary: string) {
   try {
     const oAuthClient = await getOAuthClient(userId);
     if (!oAuthClient) {
-      throw new Error("OAuth client could not be obtained.");
+      return null;
     }
 
     const calendar = await google.calendar("v3").calendars.insert({
@@ -188,7 +190,7 @@ export async function createSecondaryCalendar(userId: string, summary: string) {
     return calendar.data;
   } catch (error) {
     console.error("Error creating secondary calendar:", (error as Error).message || error);
-    throw new Error(`Failed to create secondary calendar: ${(error as Error).message || error}`);
+    return null;
   }
 }
 
@@ -196,7 +198,8 @@ export async function deleteCalendarEvent(userId: string, calendarId: string, ev
   try {
     const oAuthClient = await getOAuthClient(userId);
     if (!oAuthClient) {
-      throw new Error("OAuth client could not be obtained.");
+      // Treat as success since we can't communicate with Google Calendar
+      return { success: true };
     }
 
     await google.calendar("v3").events.delete({
