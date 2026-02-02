@@ -12,6 +12,9 @@ importers:
 
   .:
     dependencies:
+      '@better-fetch/fetch':
+        specifier: ^1.1.21
+        version: 1.1.21
       '@dpaskhin/unique':
         specifier: ^1.0.0
         version: 1.0.0
@@ -287,6 +290,9 @@ packages:
 
   '@better-fetch/fetch@1.1.18':
     resolution: {integrity: sha512-rEFOE1MYIsBmoMJtQbl32PGHHXuG2hDxvEd7rUHE0vCBoFQVSDqaVs9hkZEtHCxRoY+CljXKFCOuJ8uxqw1LcA==}
+
+  '@better-fetch/fetch@1.1.21':
+    resolution: {integrity: sha512-/ImESw0sskqlVR94jB+5+Pxjf+xBwDZF/N5+y2/q4EqD7IARUTSpPfIo8uf39SYpCxyOCtbyYpUrZ3F/k0zT4A==}
 
   '@date-fns/tz@1.4.1':
     resolution: {integrity: sha512-P5LUNhtbj6YfI3iJjw5EL9eUAG6OitD0W3fWQcpQjDRc/QIsL0tRNuO1PcDvPccWL1fSTXXdE1ds+l95DV/OFA==}
@@ -4875,6 +4881,8 @@ snapshots:
 
   '@better-fetch/fetch@1.1.18': {}
 
+  '@better-fetch/fetch@1.1.21': {}
+
   '@date-fns/tz@1.4.1': {}
 
   '@dpaskhin/unique@1.0.0': {}
@@ -8017,7 +8025,7 @@ snapshots:
   better-call@1.0.19:
     dependencies:
       '@better-auth/utils': 0.3.0
-      '@better-fetch/fetch': 1.1.18
+      '@better-fetch/fetch': 1.1.21
       rou3: 0.5.1
       set-cookie-parser: 2.7.2
       uncrypto: 0.1.3

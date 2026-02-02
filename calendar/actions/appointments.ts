@@ -69,27 +69,44 @@ export const createAppointment = async (data: unknown) => {
   let googleCalendarId = schedule.googleCalendarId;
 
   if (!googleCalendarId) {
-    // Create a secondary calendar for the app if it doesn't exist
+    // Attempt to create a secondary calendar for the app
     const newCalendar = await createSecondaryCalendar(user.id, "Elo App");
-    googleCalendarId = newCalendar.id || "primary";
-
-    // Update the schedule with the new calendar ID
-    await db
-      .update(schedules)
-      .set({ googleCalendarId })
-      .where(eq(schedules.id, schedule.id));
+    
+    // If creation succeeded, update the schedule
+    if (newCalendar && newCalendar.id) {
+        googleCalendarId = newCalendar.id;
+        
+        await db
+        .update(schedules)
+        .set({ googleCalendarId })
+        .where(eq(schedules.id, schedule.id));
+    } else {
+        // Fallback to null/primary or just skip
+        // If we can't create a calendar, we can't sync. 
+        // We'll proceed without a googleCalendarId for this appointment effectively.
+        googleCalendarId = null;
+    }
   }
 
   // create event in google calendar
-  const googleEvent = await createCalendarEvent({
-    userId: user.id,
-    guestName: patient.name || "",
-    guestEmail: patient.email || "",
-    startTime: startDateTime,
-    durationInMinutes: event.durationInMinutes || 0,
-    eventName: result.data.title || "",
-    calendarId: googleCalendarId,
-  });
+  let googleEventId: string | null = null;
+  
+  // Only attempt to create event if we have a calendar ID (which implies we might have auth, though createCalendarEvent checks again)
+  if (googleCalendarId) {
+      const googleEvent = await createCalendarEvent({
+        userId: user.id,
+        guestName: patient.name || "",
+        guestEmail: patient.email || "",
+        startTime: startDateTime,
+        durationInMinutes: event.durationInMinutes || 0,
+        eventName: result.data.title || "",
+        calendarId: googleCalendarId,
+      });
+      
+      if (googleEvent) {
+          googleEventId = googleEvent.id || null;
+      }
+  }
 
   const dbData = {
     userId: user.id,
@@ -102,7 +119,7 @@ export const createAppointment = async (data: unknown) => {
     color: result.data.color || "blue",
     scheduleId: schedule.id,
     eventId: event.id,
-    googleEventId: googleEvent.id,
+    googleEventId: googleEventId,
   };
 
   const res = await db.insert(appointments).values(dbData).returning();
@@ -203,11 +220,17 @@ export const deleteAppointment = async (id: string) => {
   if (appointment.googleEventId) {
     const schedule = await getSchedule(user.id);
     if (schedule && schedule.googleCalendarId) {
-      await deleteCalendarEvent(
-        user.id,
-        schedule.googleCalendarId,
-        appointment.googleEventId
-      );
+      // Best effort delete from Google Calendar
+      try {
+        await deleteCalendarEvent(
+            user.id,
+            schedule.googleCalendarId,
+            appointment.googleEventId
+        );
+      } catch (e) {
+        console.error("Failed to delete from Google Calendar", e);
+        // Continue to delete from DB
+      }
     }
   }
 

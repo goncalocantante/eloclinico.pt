@@ -92,7 +92,7 @@ volumes:
 }
 
 function generateAuthSecret(): string {
-  console.log("Step 5: Generating AUTH_SECRET...");
+  console.log("Step 4: Generating BETTER_AUTH_SECRET...");
   return crypto.randomBytes(32).toString("hex");
 }
 
@@ -109,16 +109,31 @@ async function writeEnvFile(envVars: Record<string, string>) {
 async function main() {
   const DATABASE_URL = await getPostgresURL();
 
-  const BASE_URL = "http://localhost:3000";
-  const AUTH_SECRET = generateAuthSecret();
+  const BETTER_AUTH_URL = "http://localhost:3000";
+  const BETTER_AUTH_SECRET = generateAuthSecret();
+
+  console.log("Step 5: Setting up Google OAuth (Optional)");
+  console.log(
+    "If you want Google Calendar sync, you need to create an app on Google Cloud Console."
+  );
+  console.log(
+    "Guide: https://developers.google.com/workspace/guides/create-project"
+  );
+  console.log("Press Enter to skip if you don't need this right now.");
+  
+  const GOOGLE_CLIENT_ID = await question("Enter your GOOGLE_CLIENT_ID: ");
+  const GOOGLE_CLIENT_SECRET = await question("Enter your GOOGLE_CLIENT_SECRET: ");
 
   await writeEnvFile({
     DATABASE_URL,
-    BASE_URL,
-    AUTH_SECRET,
+    BETTER_AUTH_URL,
+    BETTER_AUTH_SECRET,
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
   });
 
   console.log("🎉 Setup completed successfully!");
+  process.exit(0);
 }
 
 main().catch(console.error);

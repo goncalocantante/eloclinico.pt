@@ -2,7 +2,7 @@
 
 import { addMinutes, format, parseISO } from "date-fns";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import {
   Check,
   ChevronDownIcon,
@@ -100,8 +100,8 @@ export function EditAppointmentDialog({ children, event }: IProps) {
     },
   });
 
-  const watchedAppointmentTypeId = form.watch("appointmentType");
-  const watchedStartTime = form.watch("startTime");
+  const watchedAppointmentTypeId = useWatch({ control: form.control, name: "appointmentType" });
+  const watchedStartTime = useWatch({ control: form.control, name: "startTime" });
 
   useEffect(() => {
     if (watchedAppointmentTypeId && appointmentTypes) {
