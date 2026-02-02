@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Check, ChevronDownIcon, ChevronsUpDown } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useSWR from "swr";
@@ -129,8 +129,8 @@ export function AddAppointmentDialog({ children }: IProps) {
     form,
   ]);
 
-  const watchedAppointmentTypeId = form.watch("appointmentType");
-  const watchedStartTime = form.watch("startTime");
+  const watchedAppointmentTypeId = useWatch({ control: form.control, name: "appointmentType" });
+  const watchedStartTime = useWatch({ control: form.control, name: "startTime" });
 
   useEffect(() => {
     if (watchedAppointmentTypeId && appointmentTypes) {

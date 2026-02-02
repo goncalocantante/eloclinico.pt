@@ -6,7 +6,7 @@ import {
   schedules, 
   scheduleAvailability, 
   appointments,
-  accounts
+  type NewEvent
 } from "./schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth"; // Ensure this path works with tsx setup
@@ -36,7 +36,7 @@ async function seed() {
     // We use the auth API to create the user properly with password hashing
     // Note: This requires the server to be runnable in this context, or we mock the request
     // Since we are in a script, 'headers' might need to be mocked if strictly required
-    const newUser = await auth.api.signUpEmail({
+    await auth.api.signUpEmail({
         body: {
             email: DEMO_USER_EMAIL,
             password: DEMO_USER_PASSWORD,
@@ -114,7 +114,7 @@ async function seed() {
             userId: demoUser.id,
             name: e.name,
             durationInMinutes: e.durationInMinutes,
-            color: e.color as any, // Cast to enum type
+            color: e.color as NewEvent["color"], // Cast to enum type
             isActive: true
         }))
     ).returning();
