@@ -23,12 +23,16 @@ export default async function middleware(request: NextRequest) {
 
   // Define protected paths
   const isDashboard = pathname.startsWith("/dashboard");
-  const isProtectedApi = pathname.startsWith("/api") && !pathname.startsWith("/api/auth");
+  const isProtectedApi = 
+    pathname.startsWith("/api") && 
+    !pathname.startsWith("/api/auth") && 
+    !pathname.startsWith("/api/user");
 
-  if ((isDashboard || isProtectedApi) && !session) {
-    if (pathname.startsWith("/api")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (isProtectedApi && !session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (isDashboard && !session) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
