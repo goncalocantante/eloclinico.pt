@@ -1,0 +1,1 @@
+ALTER TABLE "events" ADD COLUMN IF NOT EXISTS "color" "color_enum" DEFAULT 'blue' NOT NULL;

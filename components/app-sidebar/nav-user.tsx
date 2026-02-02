@@ -3,12 +3,16 @@
 import {
   ChevronsUpDown,
   LogOut,
+  Settings,
 } from "lucide-react";
+
+import Link from "next/link";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -104,10 +108,19 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup> */}
             <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/settings" className="cursor-pointer">
+                  <Settings />
+                  Definições
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
             <DropdownMenuItem>
               <LogOut onClick={handleSignOut} className="cursor-pointer" />
               <span onClick={handleSignOut} className="cursor-pointer">
-                Log out
+                Sair
               </span>
             </DropdownMenuItem>
           </DropdownMenuContent>

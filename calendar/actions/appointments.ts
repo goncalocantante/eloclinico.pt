@@ -4,11 +4,11 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db/drizzle";
 
 import { eventSchema } from "@/calendar/schemas";
-import { appointments, patients } from "@/lib/db/schema";
+import { appointments, patients, schedules } from "@/lib/db/schema";
 import { getUser } from "@/lib/db/queries/queries";
 import { getSchedule } from "@/server/actions/schedule";
 import { getPublicEvents } from "@/server/actions/events";
-import { createCalendarEvent } from "@/server/google/googleCalendar";
+import { createCalendarEvent, createSecondaryCalendar, deleteCalendarEvent } from "@/server/google/googleCalendar";
 
 export const createAppointment = async (data: unknown) => {
   const user = await getUser();
@@ -57,6 +57,57 @@ export const createAppointment = async (data: unknown) => {
   startDateTime.setHours(startHours, startMinutes);
   endDateTime.setHours(endHours, endMinutes);
 
+  const patient = await db.query.patients.findFirst({
+    where: eq(patients.id, result.data.patientId),
+  });
+
+  if (!patient) {
+    throw new Error("Patient not found");
+  }
+
+  // Handle Google Calendar Logic
+  let googleCalendarId = schedule.googleCalendarId;
+
+  if (!googleCalendarId) {
+    // Attempt to create a secondary calendar for the app
+    const newCalendar = await createSecondaryCalendar(user.id, "Elo App");
+    
+    // If creation succeeded, update the schedule
+    if (newCalendar && newCalendar.id) {
+        googleCalendarId = newCalendar.id;
+        
+        await db
+        .update(schedules)
+        .set({ googleCalendarId })
+        .where(eq(schedules.id, schedule.id));
+    } else {
+        // Fallback to null/primary or just skip
+        // If we can't create a calendar, we can't sync. 
+        // We'll proceed without a googleCalendarId for this appointment effectively.
+        googleCalendarId = null;
+    }
+  }
+
+  // create event in google calendar
+  let googleEventId: string | null = null;
+  
+  // Only attempt to create event if we have a calendar ID (which implies we might have auth, though createCalendarEvent checks again)
+  if (googleCalendarId) {
+      const googleEvent = await createCalendarEvent({
+        userId: user.id,
+        guestName: patient.name || "",
+        guestEmail: patient.email || "",
+        startTime: startDateTime,
+        durationInMinutes: event.durationInMinutes || 0,
+        eventName: result.data.title || "",
+        calendarId: googleCalendarId,
+      });
+      
+      if (googleEvent) {
+          googleEventId = googleEvent.id || null;
+      }
+  }
+
   const dbData = {
     userId: user.id,
     patientId: result.data.patientId,
@@ -68,27 +119,11 @@ export const createAppointment = async (data: unknown) => {
     color: result.data.color || "blue",
     scheduleId: schedule.id,
     eventId: event.id,
+    googleEventId: googleEventId,
   };
 
   const res = await db.insert(appointments).values(dbData).returning();
 
-  const patient = await db.query.patients.findFirst({
-    where: eq(patients.id, result.data.patientId),
-  });
-
-  if (!patient) {
-    throw new Error("Patient not found");
-  }
-
-  // create event in google calendar
-  await createCalendarEvent({
-    userId: user.id,
-    guestName: patient.name || "",
-    guestEmail: patient.email || "",
-    startTime: startDateTime,
-    durationInMinutes: event.durationInMinutes || 0,
-    eventName: result.data.title || "",
-  });
   return res;
 };
 
@@ -179,6 +214,24 @@ export const deleteAppointment = async (id: string) => {
       success: false,
       error: "Appointment not found or you don't have permission to delete it.",
     };
+  }
+
+  // Delete from Google Calendar if linked
+  if (appointment.googleEventId) {
+    const schedule = await getSchedule(user.id);
+    if (schedule && schedule.googleCalendarId) {
+      // Best effort delete from Google Calendar
+      try {
+        await deleteCalendarEvent(
+            user.id,
+            schedule.googleCalendarId,
+            appointment.googleEventId
+        );
+      } catch (e) {
+        console.error("Failed to delete from Google Calendar", e);
+        // Continue to delete from DB
+      }
+    }
   }
 
   // Delete the appointment

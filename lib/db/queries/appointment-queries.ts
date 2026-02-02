@@ -2,6 +2,7 @@ import { getUser } from "./queries";
 import { db } from "../drizzle";
 import { appointments } from "@/lib/db/schema";
 import type { TEventColor } from "@/calendar/types";
+import { eq } from "drizzle-orm";
 
 export async function getAppointments() {
   const user = await getUser();
@@ -9,7 +10,10 @@ export async function getAppointments() {
     throw new Error("User not authenticated");
   }
 
-  const rows = await db.select().from(appointments);
+  const rows = await db
+    .select()
+    .from(appointments)
+    .where(eq(appointments.userId, user.id));
   const rowsMapped = rows.map((row) => {
     // Extract hour and minute from timestamps for frontend compatibility
     const startDate = new Date(row.startDateTime);

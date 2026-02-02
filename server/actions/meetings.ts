@@ -50,6 +50,7 @@ export async function createMeeting(
     }
 
     // Create the Google Calendar event with all necessary details
+    // This is optional - if it fails or returns null (no auth), we just proceed
     await createCalendarEvent({
       ...data, // guest info, timezone, etc.
       startTime: startInTimezone, // adjusted to the right timezone

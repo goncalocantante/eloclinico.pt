@@ -1,75 +1,77 @@
-# Next.js SaaS Starter
+# Eloclinico.pt
 
-This is a starter template for building a SaaS application using **Next.js** with support for authentication, and a dashboard for logged-in users.
+A specialized SaaS platform empowering psychologists to manage clinical records, patient scheduling, and invoicing with privacy by design.
 
-**Demo: [https://next-saas-start.vercel.app/](https://next-saas-start.vercel.app/)**
+**Current Status:** Closed Beta (User Research Phase)
 
-## Features
+---
 
-- Marketing landing page (`/`) with animated Terminal element
-- Dashboard pages with CRUD operations on users/clinics
-- Basic RBAC with Owner and Member roles
-- Global middleware to protect logged-in routes
-- Local middleware to protect Server Actions or validate Zod schemas
-- Activity logging system for any user events
+## 🎯 Project Vision
 
-## Tech Stack
+Psychologists face a unique challenge: managing highly sensitive clinical data while juggling scheduling and administrative overhead, often using fragmented tools that aren't compliant or optimized for their workflow.
 
-- **Framework**: [Next.js](https://nextjs.org/)
-- **Database**: [Postgres](https://www.postgresql.org/)
-- **ORM**: [Drizzle](https://orm.drizzle.team/)
-- **UI Library**: [shadcn/ui](https://ui.shadcn.com/)
+**Eloclinico** solves this by providing a unified, secure workspace tailored to the therapeutic context.
+*   **Privacy First:** Built with strict data isolation and security practices suitable for clinical records.
+*   **Workflow Optimization:** deep integration with Google Calendar for seamless scheduling without double-booking.
+*   **Clinical Focus:** Structured notes and patient management designed specifically for mental health professionals.
 
-## Getting Started
+## 🛠 The Tech Stack
 
-```bash
-git clone https://github.com/nextjs/saas-starter
-cd saas-starter
-pnpm install
-```
+Built on a modern, type-safe web stack designed for performance, scalability, and developer experience.
 
-## Running Locally
+*   **Framework:** [Next.js 16](https://nextjs.org/) (App Router, Server Actions)
+*   **Language:** TypeScript
+*   **Database:** PostgreSQL (Cloud-hosted)
+*   **ORM:** [Drizzle ORM](https://orm.drizzle.team/) for type-safe database queries
+*   **Authentication:** [Better Auth](https://better-auth.com/) for secure, robust session management
+*   **UI/UX:** [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) + [Radix UI](https://www.radix-ui.com/)
+*   **Integrations:** Google Calendar API (via `googleapis`)
+*   **State Management:** React Server Components + React Hooks
 
-Use the included setup script to create your `.env` file:
+## 🏗 Engineering Excellence
 
-```bash
-pnpm db:setup
-```
+This repository demonstrates a commitment to "Production-Grade" engineering standards:
 
-Run the database migrations and seed the database with a default user and team:
+*   **CI/CD Pipelines:** Automated workflows via **GitHub Actions** ensure that every commit is linted and built before merging, maintaining code quality and preventing regressions.
+*   **Strict Type Safety:** Comprehensive TypeScript and **Zod** schema validation ensure data integrity from the database layer to the UI.
+*   **Environment Management:** Strict separation of concerns using `.env` configuration for Development and Production environments, ensuring no secrets are ever exposed in codebase.
+*   **Modular Architecture:** Feature-based folder structure (e.g., `server/google`, `components/dnd`) for maintainability.
 
-```bash
-pnpm db:migrate
-pnpm db:seed
-```
+## 🚀 Product Roadmap
 
-You create new users through the `/sign-up` route.
+I am currently operating in a **Closed Beta** phase.
+*   **Q1 Focus:** Conducting user interviews with pilot psychologists to refine the scheduling and notes interface.
 
-Finally, run the Next.js development server:
+## 💻 Local Setup
 
-```bash
-pnpm dev
-```
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/goncalocantante/eloclinico.pt.git
+    cd eloclinico.pt
+    ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the app in action.
+2.  **Install dependencies:**
+    ```bash
+    pnpm install
+    ```
 
+3.  **Run Setup Wizard:**
+    This command will guide you through setting up the database (local Docker or remote), configuring environment variables, and setting up Google OAuth.
+    ```bash
+    pnpm db:setup
+    ```
 
+4.  **Database Migration & Seed:**
+    ```bash
+    pnpm db:migrate
+    pnpm db:seed
+    ```
 
-## Going to Production
+5.  **Run Development Server:**
+    ```bash
+    pnpm dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-When you're ready to deploy your SaaS application to production, follow these steps:
-
-### Deploy to Vercel
-
-1. Push your code to a GitHub repository.
-2. Connect your repository to [Vercel](https://vercel.com/) and deploy it.
-3. Follow the Vercel deployment process, which will guide you through setting up your project.
-
-### Add environment variables
-
-In your Vercel project settings (or during deployment), add all the necessary environment variables. Make sure to update the values for the production environment, including:
-
-1. `BASE_URL`: Set this to your production domain.
-4. `DATABASE_URL`: Set this to your production database URL.
-5. `AUTH_SECRET`: Set this to a random string. `openssl rand -base64 32` will generate one.
-
+---
+*Built with ❤️ by Gonçalo Cantante*

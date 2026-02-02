@@ -4,6 +4,8 @@ import { type LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 import {
+  SidebarGroup,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -14,6 +16,7 @@ import {
 
 export function NavMain({
   items,
+  label,
 }: {
   items: {
     title: string;
@@ -24,37 +27,42 @@ export function NavMain({
       title: string;
       url: string;
     }[];
+
   }[];
+  label?: string;
 }) {
   return (
-    <SidebarMenu>
-      {items.map((item) => {
-        return (
-          <>
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild isActive={item.isActive}>
-                <Link href={item.url}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            {item.subItems && (
-              <SidebarMenuSub>
-                {item.subItems.map((subItem) => (
-                  <SidebarMenuSubItem key={subItem.title}>
-                    <SidebarMenuSubButton asChild>
-                      <Link href={subItem.url}>
-                        <span>{subItem.title}</span>
-                      </Link>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                ))}
-              </SidebarMenuSub>
-            )}
-          </>
-        );
-      })}
-    </SidebarMenu>
+    <SidebarGroup>
+      {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
+      <SidebarMenu>
+        {items.map((item) => {
+          return (
+            <div key={item.title}>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={item.isActive}>
+                  <Link href={item.url}>
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {item.subItems && (
+                <SidebarMenuSub>
+                  {item.subItems.map((subItem) => (
+                    <SidebarMenuSubItem key={subItem.title}>
+                      <SidebarMenuSubButton asChild>
+                        <Link href={subItem.url}>
+                          <span>{subItem.title}</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ))}
+                </SidebarMenuSub>
+              )}
+            </div>
+          );
+        })}
+      </SidebarMenu>
+    </SidebarGroup>
   );
 }

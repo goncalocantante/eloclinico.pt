@@ -18,4 +18,6 @@ export const eventFormSchema = z.object({
     .int()
     .positive("Duration must be greater than 0")
     .max(60 * 12, `Duration must be less than 12 hours (${60 * 12} minutes)`),
+
+  color: z.enum(["blue", "green", "red", "yellow", "purple", "orange", "gray"]),
 });
