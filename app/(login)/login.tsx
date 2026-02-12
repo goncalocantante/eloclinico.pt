@@ -18,13 +18,17 @@ export function Login({ mode = "signin" }: { mode?: "signin" | "signup" }) {
   const [isDemoLoading, setIsDemoLoading] = useState(false);
 
   const handleDemoLogin = async () => {
-    setIsDemoLoading(true);
     await authClient.signIn.email({
       email: DEMO_USER_EMAIL,
       password: DEMO_USER_PASSWORD,
+      callbackURL: "/dashboard",
+      rememberMe: false
     }, {
       onSuccess: () => {
-        router.push("/dashboard");
+        setIsDemoLoading(false);
+      },
+      onRequest: () => {
+        setIsDemoLoading(true);
       },
       onError: (ctx) => {
         toast.error(ctx.error.message);

@@ -1,5 +1,5 @@
 import PublicProfile from "@/components/public-profile";
-import { getUser } from "@/lib/db/queries/queries";
+import { getPublicProfile } from "@/lib/db/queries/queries";
 import { notFound } from "next/navigation";
 
 export default async function PublicProfilePage({
@@ -9,9 +9,9 @@ export default async function PublicProfilePage({
 }) {
   const { userId } = await params;
 
-  const user = await getUser(userId);
+  const user = await getPublicProfile(userId);
   if (!user) {
-    return notFound();
+    notFound();
   }
 
   const { name } = user; // Extract the user's full name

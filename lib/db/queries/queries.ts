@@ -7,21 +7,7 @@ import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { DEMO_USER_EMAIL } from "@/constants";
 
-export async function getUser(userId?: string) {
-  if (userId) {
-    const result = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1);
-
-    if (result.length === 0) {
-      return null;
-    }
-
-    return result[0];
-  }
-
+export async function getUser() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -31,4 +17,22 @@ export async function getUser(userId?: string) {
     return null;
   }
   return session.user;
+}
+
+export async function getPublicProfile(userId: string) {
+  const result = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      image: users.image,
+    })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (result.length === 0) {
+    return null;
+  }
+
+  return result[0];
 }
