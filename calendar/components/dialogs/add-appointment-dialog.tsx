@@ -89,8 +89,6 @@ export function AddAppointmentDialog({ children }: IProps) {
   });
 
   const onSubmit = async (_values: TEventFormData) => {
-    console.log("Form submitted with values: ", _values);
-
     const patientName = patients.find(
       (patient) => patient.id === _values.patientId
     )?.name;

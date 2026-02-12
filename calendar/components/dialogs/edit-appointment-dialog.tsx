@@ -128,7 +128,6 @@ export function EditAppointmentDialog({ children, event }: IProps) {
   }, [watchedAppointmentTypeId, watchedStartTime, appointmentTypes, form]);
 
   const onSubmit = async (values: TEventFormData) => {
-    console.log("Form submitted with values: ", values);
     const patientName = patients.find(
       (patient) => patient.id === values.patientId
     )?.name;
