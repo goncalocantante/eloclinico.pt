@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/drizzle";
 
 import { eventSchema } from "@/calendar/schemas";
@@ -19,7 +19,7 @@ export const createAppointment = async (data: unknown) => {
   const result = eventSchema.safeParse(data);
   if (!result.success) {
     console.log("Error parsing event schema: ", result);
-    return { error: result.error.issues[0].message };
+    return { success: false, error: result.error.issues[0].message };
   }
 
   if (
@@ -28,7 +28,7 @@ export const createAppointment = async (data: unknown) => {
     !result.data.endTime ||
     !result.data.patientId
   ) {
-    return { error: "Missing required fields" };
+    return { success: false, error: "Missing required fields" };
   }
 
   // Get user's schedule and first active event
@@ -70,7 +70,7 @@ export const createAppointment = async (data: unknown) => {
 
   if (!googleCalendarId) {
     // Attempt to create a secondary calendar for the app
-    const newCalendar = await createSecondaryCalendar(user.id, "Elo App");
+    const newCalendar = await createSecondaryCalendar(user.id, "Elo Clínico");
     
     // If creation succeeded, update the schedule
     if (newCalendar && newCalendar.id) {
@@ -122,9 +122,28 @@ export const createAppointment = async (data: unknown) => {
     googleEventId: googleEventId,
   };
 
-  const res = await db.insert(appointments).values(dbData).returning();
+  // Check for overlaps
+  const overlap = await db.query.appointments.findFirst({
+    where: and(
+      eq(appointments.userId, user.id),
+      sql`tstzrange(${appointments.startDateTime}, ${appointments.endDateTime}, '[]') && tstzrange(${startDateTime.toISOString()}::timestamptz, ${endDateTime.toISOString()}::timestamptz, '[]')`
+    ),
+  });
 
-  return res;
+  if (overlap) {
+    return { success: false, error: "Another appointment overlaps with this time slot." };
+  }
+
+  try {
+    const res = await db.insert(appointments).values(dbData).returning();
+    return { success: true, data: res[0] };
+  } catch (error: any) {
+    if (error.code === "23505") {
+      return { success: false, error: "Appointment already exists at this time." };
+    }
+    console.error("Failed to create appointment:", error);
+    return { success: false, error: "Failed to create appointment" };
+  }
 };
 
 export const updateAppointment = async (id: string, data: unknown) => {
@@ -136,7 +155,7 @@ export const updateAppointment = async (id: string, data: unknown) => {
   const result = eventSchema.safeParse(data);
   if (!result.success) {
     console.log("Error parsing event schema: ", result);
-    return { error: result.error.issues[0].message };
+    return { success: false, error: result.error.issues[0].message };
   }
 
   if (
@@ -145,7 +164,7 @@ export const updateAppointment = async (id: string, data: unknown) => {
     !result.data.endTime ||
     !result.data.patientId
   ) {
-    return { error: "Missing required fields" };
+    return { success: false, error: "Missing required fields" };
   }
 
   // Get user's schedule
@@ -187,13 +206,34 @@ export const updateAppointment = async (id: string, data: unknown) => {
     eventId: eventId,
   };
 
-  const res = await db
-    .update(appointments)
-    .set(dbData)
-    .where(eq(appointments.id, id))
-    .returning();
+  // Check for overlaps (excluding the current appointment itself)
+  const overlap = await db.query.appointments.findFirst({
+    where: and(
+      eq(appointments.userId, user.id),
+      sql`tstzrange(${appointments.startDateTime}, ${appointments.endDateTime}, '[]') && tstzrange(${startDateTime.toISOString()}::timestamptz, ${endDateTime.toISOString()}::timestamptz, '[]')`,
+      sql`${appointments.id} != ${id}`
+    ),
+  });
 
-  return res;
+  if (overlap) {
+    return { success: false, error: "Another appointment overlaps with this time slot." };
+  }
+
+  try {
+    const res = await db
+      .update(appointments)
+      .set(dbData)
+      .where(eq(appointments.id, id))
+      .returning();
+
+    return { success: true, data: res[0] };
+  } catch (error: any) {
+    if (error.code === "23505") {
+      return { success: false, error: "Appointment already exists at this time." };
+    }
+    console.error("Failed to update appointment:", error);
+    return { success: false, error: "Failed to update appointment" };
+  }
 };
 
 export const deleteAppointment = async (id: string) => {
@@ -216,26 +256,31 @@ export const deleteAppointment = async (id: string) => {
     };
   }
 
-  // Delete from Google Calendar if linked
-  if (appointment.googleEventId) {
-    const schedule = await getSchedule(user.id);
-    if (schedule && schedule.googleCalendarId) {
-      // Best effort delete from Google Calendar
-      try {
-        await deleteCalendarEvent(
-            user.id,
-            schedule.googleCalendarId,
-            appointment.googleEventId
-        );
-      } catch (e) {
-        console.error("Failed to delete from Google Calendar", e);
-        // Continue to delete from DB
+  try {
+    // Delete from Google Calendar if linked
+    if (appointment.googleEventId) {
+      const schedule = await getSchedule(user.id);
+      if (schedule && schedule.googleCalendarId) {
+        // Best effort delete from Google Calendar
+        try {
+          await deleteCalendarEvent(
+              user.id,
+              schedule.googleCalendarId,
+              appointment.googleEventId
+          );
+        } catch (e) {
+          console.error("Failed to delete from Google Calendar", e);
+          // Continue to delete from DB
+        }
       }
     }
+
+    // Delete the appointment
+    await db.delete(appointments).where(eq(appointments.id, id));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete appointment:", error);
+    return { success: false, error: "Failed to delete appointment" };
   }
-
-  // Delete the appointment
-  await db.delete(appointments).where(eq(appointments.id, id));
-
-  return { success: true };
 };

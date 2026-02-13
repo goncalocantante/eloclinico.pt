@@ -6,6 +6,7 @@ import { Check, ChevronDownIcon, ChevronsUpDown } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useSWR from "swr";
 import { addMinutes, format } from "date-fns";
+import { toast } from "sonner";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 import { fetcher } from "@/lib/utils";
@@ -96,15 +97,24 @@ export function AddAppointmentDialog({ children }: IProps) {
       (type) => type.id === _values.appointmentType
     )?.name;
 
-    await createAppointment({
-      ..._values,
-      title: appointmentTypeName + " - " + patientName,
-    });
+    try {
+      const result = await createAppointment({
+        ..._values,
+        title: appointmentTypeName + " - " + patientName,
+      });
 
-    // Refetch appointments from the database after creating a new one
-    await refetchAppointments();
-    closeAddAppointmentDialog();
-    form.reset();
+      if (!result.success) {
+        toast.error(result.error || "Erro ao agendar consulta");
+        return;
+      }
+
+      toast.success("Consulta agendada com sucesso");
+      await refetchAppointments();
+      closeAddAppointmentDialog();
+      form.reset();
+    } catch (error) {
+      toast.error((error as Error).message || "Erro ao agendar consulta");
+    }
   };
 
   // Update form when dialog state changes

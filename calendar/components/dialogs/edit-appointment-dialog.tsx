@@ -1,6 +1,7 @@
 "use client";
 
 import { addMinutes, format, parseISO } from "date-fns";
+import { toast } from "sonner";
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import {
@@ -135,15 +136,24 @@ export function EditAppointmentDialog({ children, event }: IProps) {
       (type) => type.id === values.appointmentType
     )?.name;
 
-    await updateAppointment(String(event.id), {
-      ...values,
-      title: appointmentTypeName + " - " + patientName,
-    });
+    try {
+      const result = await updateAppointment(String(event.id), {
+        ...values,
+        title: appointmentTypeName + " - " + patientName,
+      });
 
-    // Refetch appointments from the database after creating a new one
-    await refetchAppointments();
-    onClose();
-    form.reset();
+      if (!result.success) {
+        toast.error(result.error || "Erro ao atualizar consulta");
+        return;
+      }
+
+      toast.success("Consulta atualizada com sucesso");
+      await refetchAppointments();
+      onClose();
+      form.reset();
+    } catch (error) {
+      toast.error((error as Error).message || "Erro ao atualizar consulta");
+    }
   };
 
   return (
