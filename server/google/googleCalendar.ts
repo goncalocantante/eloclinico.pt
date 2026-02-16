@@ -194,6 +194,70 @@ export async function createSecondaryCalendar(userId: string, summary: string) {
   }
 }
 
+export async function updateCalendarEvent({
+  userId,
+  eventId,
+  guestName,
+  guestEmail,
+  startTime,
+  durationInMinutes,
+  eventName,
+  calendarId = "primary",
+}: {
+  userId: string;
+  eventId: string;
+  guestName: string;
+  guestEmail: string;
+  startTime: Date;
+  durationInMinutes: number;
+  eventName: string;
+  calendarId?: string;
+}): Promise<calendar_v3.Schema$Event | null> {
+  try {
+    const oAuthClient = await getOAuthClient(userId);
+    if (!oAuthClient) {
+      return null;
+    }
+
+    const calendarUser = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    if (!calendarUser || !calendarUser.email) {
+      throw new Error("User has no email");
+    }
+
+    const calendarEvent = await google.calendar("v3").events.patch({
+      calendarId,
+      eventId,
+      auth: oAuthClient,
+      sendUpdates: "all",
+      requestBody: {
+        attendees: [
+          { email: guestEmail, displayName: guestName },
+          {
+            email: calendarUser.email,
+            displayName: calendarUser.name,
+            responseStatus: "accepted",
+          },
+        ],
+        start: {
+          dateTime: startTime.toISOString(),
+        },
+        end: {
+          dateTime: addMinutes(startTime, durationInMinutes).toISOString(),
+        },
+        summary: `${guestName} + ${calendarUser.name}: ${eventName}`,
+      },
+    });
+
+    return calendarEvent.data;
+  } catch (error) {
+    console.error("Error updating calendar event:", (error as Error).message || error);
+    return null;
+  }
+}
+
 export async function deleteCalendarEvent(userId: string, calendarId: string, eventId: string) {
   try {
     const oAuthClient = await getOAuthClient(userId);

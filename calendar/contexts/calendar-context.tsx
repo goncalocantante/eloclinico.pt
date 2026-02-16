@@ -62,7 +62,7 @@ const DEFAULT_WORKING_HOURS: TWorkingHours = [
   { dayOfWeek: "saturday", startTime: "08:00", endTime: "12:00" },
 ];
 
-const VISIBLE_HOURS = { from: 7, to: 18 };
+const VISIBLE_HOURS = { from: 8, to: 20 };
 
 export function CalendarProvider({
   children,
@@ -114,7 +114,7 @@ export function CalendarProvider({
   };
 
   const selectedUserId: IUser["id"] = session?.user?.id ?? "all";
-  const setSelectedUserId = () => {};
+  const setSelectedUserId = () => { };
   // const [selectedUserId, setSelectedUserId] = useState<IUser["id"] | "all">(
   //   "all"
   // );
