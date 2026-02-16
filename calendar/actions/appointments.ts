@@ -41,12 +41,12 @@ export const createAppointment = async (data: unknown) => {
 
   // Fix #5: Validate endTime > startTime
   if (endDateTime <= startDateTime) {
-    return { success: false, error: "End time must be after start time." };
+    return { success: false, error: "Data de fim deve ser posterior à data de início." };
   }
 
   // Fix #7: No past-date appointments
   if (startDateTime < new Date()) {
-    return { success: false, error: "Cannot create an appointment in the past." };
+    return { success: false, error: "Não é possível criar um compromisso no passado." };
   }
 
   // Get user's schedule
@@ -58,12 +58,12 @@ export const createAppointment = async (data: unknown) => {
   // Get event type
   const events = await getPublicEvents(user.id);
   if (events.length === 0) {
-    return { success: false, error: "No active event types found. Please create one first." };
+    return { success: false, error: "Nenhum tipo de consulta ativo encontrado. Por favor, crie um primeiro." };
   }
 
   const event = events.find((e) => e.id === result.data.appointmentType);
   if (!event || !event.id) {
-    return { success: false, error: "Selected event type not found." };
+    return { success: false, error: "Tipo de consulta selecionado não encontrado." };
   }
 
   // Fix #4: Verify patient belongs to the current user
@@ -72,12 +72,12 @@ export const createAppointment = async (data: unknown) => {
   });
 
   if (!patient) {
-    return { success: false, error: "Patient not found." };
+    return { success: false, error: "Paciente não encontrado." };
   }
 
   // Check if the time slot falls within the user's availability
   if (!isTimeWithinAvailability(schedule, startDateTime, endDateTime)) {
-    return { success: false, error: "This time slot is outside your available hours." };
+    return { success: false, error: "Este horário está fora do seu horário de funcionamento." };
   }
 
   // Check for overlaps
@@ -89,7 +89,7 @@ export const createAppointment = async (data: unknown) => {
   });
 
   if (overlap) {
-    return { success: false, error: "Another appointment overlaps with this time slot." };
+    return { success: false, error: "Outro compromisso coincide com este horário." };
   }
 
   // Fix #6: Use a single source of truth for duration
@@ -155,32 +155,22 @@ export const createAppointment = async (data: unknown) => {
     return { success: true, data: created };
   } catch (error: any) {
     if (error.code === "23505") {
-      return { success: false, error: "Appointment already exists at this time." };
+      return { success: false, error: "Já existe uma consulta neste horário." };
     }
     console.error("Failed to create appointment:", error);
-    return { success: false, error: "Failed to create appointment" };
+    return { success: false, error: "Falha ao criar consulta." };
   }
 };
 
 export const updateAppointment = async (id: string, data: unknown) => {
   const user = await getUser();
   if (!user) {
-    return { success: false, error: "User is not authenticated" };
+    return { success: false, error: "Utilizador não autenticado" };
   }
 
   const result = eventSchema.safeParse(data);
   if (!result.success) {
-    console.log("Error parsing event schema: ", result);
     return { success: false, error: result.error.issues[0].message };
-  }
-
-  if (
-    !result.data.startDate ||
-    !result.data.startTime ||
-    !result.data.endTime ||
-    !result.data.patientId
-  ) {
-    return { success: false, error: "Missing required fields" };
   }
 
   // Build start and end DateTimes
