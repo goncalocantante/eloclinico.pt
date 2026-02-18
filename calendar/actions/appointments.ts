@@ -17,6 +17,10 @@ import {
   updateCalendarEvent,
 } from "@/server/google/googleCalendar";
 
+function hasErrorCode(error: unknown): error is { code: string } {
+  return error instanceof Object && 'code' in error;
+}
+
 export const createAppointment = async (data: unknown) => {
   const user = await getUser();
   if (!user) {
@@ -153,8 +157,8 @@ export const createAppointment = async (data: unknown) => {
     }
 
     return { success: true, data: created };
-  } catch (error: any) {
-    if (error.code === "23505") {
+  } catch (error: unknown) {
+    if (hasErrorCode(error) && error.code === "23505") {
       return { success: false, error: "Já existe uma consulta neste horário." };
     }
     console.error("Failed to create appointment:", error);
@@ -317,8 +321,8 @@ export const updateAppointment = async (id: string, data: unknown) => {
     }
 
     return { success: true, data: res[0] };
-  } catch (error: any) {
-    if (error.code === "23505") {
+  } catch (error: unknown) {
+    if (hasErrorCode(error) && error.code === "23505") {
       return { success: false, error: "Já existe uma consulta neste horário." };
     }
     console.error("Failed to update appointment:", error);
@@ -382,8 +386,8 @@ export const rescheduleAppointment = async (
     }
 
     return { success: true, data: res[0] };
-  } catch (error: any) {
-    if (error.code === "23505") {
+  } catch (error: unknown) {
+    if (hasErrorCode(error) && error.code === "23505") {
       return { success: false, error: "Já existe uma consulta neste horário." };
     }
     console.error("Failed to reschedule appointment:", error);
