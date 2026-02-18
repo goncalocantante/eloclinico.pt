@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/card";
 import { formatDateTime } from "@/lib/formatters";
 import { getEvent } from "@/server/actions/events";
-import { AlertTriangle } from "lucide-react";
 
-import { getUser } from "@/lib/db/queries/queries";
+import { getPublicProfile } from "@/lib/db/queries/queries";
+import { notFound } from "next/navigation";
 
 // The default async function to render the success page
 export default async function SuccessPage({
@@ -27,18 +27,14 @@ export default async function SuccessPage({
   // Query the database to find the specific active event that matches the user and event ID
   const event = await getEvent(clerkUserId, eventId);
   // If event doesn't exist, show a 404 page
-  if (!event)
-    return (
-      <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md flex items-center gap-2 text-sm max-w-md mx-auto mt-6">
-        <AlertTriangle className="w-5 h-5" />
-        <span>This event doesn&apos;t exist anymore.</span>
-      </div>
-    );
+  if (!event) {
+    notFound();
+  }
 
   // Fetch the user details from Clerk based on the user ID
-  const calendarUser = await getUser();
+  const calendarUser = await getPublicProfile(clerkUserId);
   if (!calendarUser) {
-    throw new Error("User is not authenticated");
+    notFound();
   }
   // Convert the received start time string to a JavaScript Date object
   const startTimeDate = new Date(startTime);
@@ -55,7 +51,7 @@ export default async function SuccessPage({
       </CardHeader>
       <CardContent>
         {/* Inform the user that a confirmation email is on its way */}
-          You&apos;ll receive a calendar invitation shortly. You can safely close
+        You&apos;ll receive a calendar invitation shortly. You can safely close
         this page now.
       </CardContent>
     </Card>

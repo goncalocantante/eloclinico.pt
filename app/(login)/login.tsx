@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { GoogleButton } from "@/components/ui/google-button";
 import Logo from "@/components/logo";
 import { authClient } from "@/lib/auth/client";
@@ -12,19 +12,22 @@ import { DEMO_USER_EMAIL, DEMO_USER_PASSWORD } from "@/constants";
 
 export function Login({ mode = "signin" }: { mode?: "signin" | "signup" }) {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const redirect = searchParams.get("redirect");
   const priceId = searchParams.get("priceId");
   const [isDemoLoading, setIsDemoLoading] = useState(false);
 
   const handleDemoLogin = async () => {
-    setIsDemoLoading(true);
     await authClient.signIn.email({
       email: DEMO_USER_EMAIL,
       password: DEMO_USER_PASSWORD,
+      callbackURL: "/dashboard",
+      rememberMe: false
     }, {
       onSuccess: () => {
-        router.push("/dashboard");
+        setIsDemoLoading(false);
+      },
+      onRequest: () => {
+        setIsDemoLoading(true);
       },
       onError: (ctx) => {
         toast.error(ctx.error.message);

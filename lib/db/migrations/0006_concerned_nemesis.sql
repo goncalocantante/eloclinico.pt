@@ -1,0 +1,1 @@
+ALTER TABLE "appointments" ADD CONSTRAINT "unique_appointment_time_index" UNIQUE("user_id","start_date_time");

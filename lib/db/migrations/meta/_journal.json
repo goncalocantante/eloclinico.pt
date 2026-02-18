@@ -43,6 +43,13 @@
       "when": 1768994351170,
       "tag": "0005_melted_dragon_man",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770643198393,
+      "tag": "0006_concerned_nemesis",
+      "breakpoints": true
     }
   ]
 }

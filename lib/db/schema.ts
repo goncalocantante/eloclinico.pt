@@ -9,6 +9,7 @@ import {
   boolean,
   index,
   pgEnum,
+  unique,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { DAYS_OF_WEEK_IN_ORDER, APPOINTMENT_COLOR } from "@/constants";
@@ -188,7 +189,10 @@ export const appointments = pgTable("appointments", {
     .$onUpdate(() => new Date())
     .notNull(),
   source: text("source").notNull().default("manual"), // 'manual' or 'public'
-});
+},
+(table) => [
+  unique("unique_appointment_time_index").on(table.userId, table.startDateTime),
+]);
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

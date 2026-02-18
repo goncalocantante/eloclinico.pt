@@ -1,3 +1,4 @@
+import { fromZonedTime } from "date-fns-tz";
 import {
   addDays,
   addMonths,
@@ -23,7 +24,16 @@ import {
   subYears,
   addYears,
   isSameYear,
+  isFriday,
+  isMonday,
+  isSaturday,
+  isSunday,
+  isThursday,
+  isTuesday,
+  isWednesday,
   isWithinInterval,
+  setHours,
+  setMinutes,
 } from "date-fns";
 import type { Locale } from "date-fns";
 
@@ -34,6 +44,7 @@ import type {
   TWorkingHours,
 } from "@/calendar/types";
 import { DAYS_OF_WEEK_IN_ORDER } from "@/constants";
+import { scheduleAvailability } from "@/lib/db/schema";
 import type { FullSchedule } from "@/server/actions/schedule";
 
 // ================ Header helper functions ================ //
@@ -461,4 +472,77 @@ export function workingHoursToSchedule(
     timezone,
     availabilities: workingHours,
   };
+}
+
+// ================ Availability validation helper functions ================ //
+
+export function getAvailabilities(
+  groupedAvailabilities: Partial<
+    Record<
+      (typeof DAYS_OF_WEEK_IN_ORDER)[number],
+      (typeof scheduleAvailability.$inferSelect)[]
+    >
+  >,
+  date: Date,
+  timezone: string
+): { start: Date; end: Date }[] {
+  const dayOfWeek = (() => {
+    if (isMonday(date)) return "monday";
+    if (isTuesday(date)) return "tuesday";
+    if (isWednesday(date)) return "wednesday";
+    if (isThursday(date)) return "thursday";
+    if (isFriday(date)) return "friday";
+    if (isSaturday(date)) return "saturday";
+    if (isSunday(date)) return "sunday";
+    return null;
+  })();
+
+  if (!dayOfWeek) return [];
+
+  const dayAvailabilities = groupedAvailabilities[dayOfWeek];
+  if (!dayAvailabilities) return [];
+
+  return dayAvailabilities.map(({ startTime, endTime }) => {
+    const [startHour, startMinute] = startTime.split(":").map(Number);
+    const [endHour, endMinute] = endTime.split(":").map(Number);
+
+    const start = fromZonedTime(
+      setMinutes(setHours(date, startHour), startMinute),
+      timezone
+    );
+
+    const end = fromZonedTime(
+      setMinutes(setHours(date, endHour), endMinute),
+      timezone
+    );
+
+    return { start, end };
+  });
+}
+
+/**
+ * Lightweight point-in-time check: does the interval [startDateTime, endDateTime]
+ * fall entirely within at least one of the user's availability windows?
+ */
+export function isTimeWithinAvailability(
+  schedule: FullSchedule,
+  startDateTime: Date,
+  endDateTime: Date
+): boolean {
+  const groupedAvailabilities = Object.groupBy(
+    schedule.availabilities,
+    (a) => a.dayOfWeek
+  );
+
+  const availabilities = getAvailabilities(
+    groupedAvailabilities,
+    startDateTime,
+    schedule.timezone
+  );
+  
+  return availabilities.some(
+    (availability) =>
+      isWithinInterval(startDateTime, availability) &&
+      isWithinInterval(endDateTime, availability)
+  );
 }

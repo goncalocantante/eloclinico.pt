@@ -16,8 +16,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import MeetingForm from "@/components/forms/meeting-form";
-import { getUser } from "@/lib/db/queries/queries";
+import { getPublicProfile } from "@/lib/db/queries/queries";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { notFound } from "next/navigation";
 
 export default async function BookingPage({
   params,
@@ -37,10 +38,10 @@ export default async function BookingPage({
       </div>
     );
 
-  // Get the full user object from db
-  const user = await getUser(userId);
+  // Get the public user profile from db
+  const user = await getPublicProfile(userId);
   if (!user) {
-    throw new Error("User is not authenticated");
+    notFound();
   }
 
   // Define a date range from now (rounded up to the nearest 15 minutes) to 1 year later
