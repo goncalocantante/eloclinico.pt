@@ -6,7 +6,7 @@ A specialized SaaS platform empowering psychologists to manage clinical records,
 
 ---
 
-## 🎯 Project Vision
+## 🎯 Project Vision -
 
 Psychologists face a unique challenge: managing highly sensitive clinical data while juggling scheduling and administrative overhead, often using fragmented tools that aren't compliant or optimized for their workflow.
 
