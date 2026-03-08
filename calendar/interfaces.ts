@@ -18,6 +18,7 @@ export interface IEvent {
   notes: string;
   scheduleId: string;
   eventId: string;
+  isVideoCall: boolean;
 }
 
 export interface ICalendarCell {

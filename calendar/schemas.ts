@@ -9,6 +9,7 @@ export const eventSchema = z.object({
   startTime: z.string({ message: "Selecione a hora de início" }).min(1, "Selecione a hora de início"),
   endTime: z.string({ message: "Selecione a hora de fim" }).min(1, "Selecione a hora de fim"),
   notes: z.string().optional(),
+  isVideoCall: z.boolean(),
   color: z.enum(
     ["blue", "green", "red", "yellow", "purple", "orange", "gray"] as const,
     { message: "Selecione uma cor" }

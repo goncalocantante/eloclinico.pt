@@ -138,6 +138,7 @@ const mockGenerator = (numberOfEvents: number): IEvent[] => {
       appointmentType: "Individual Session",
       scheduleId: "1234567890",
       eventId: "1234567890",
+      isVideoCall: false,
       notes: "Can't wait to see the most beautiful woman in that dress!",
       user: USERS_MOCK[0],
     },
@@ -165,6 +166,7 @@ const mockGenerator = (numberOfEvents: number): IEvent[] => {
     appointmentType: "Individual Session",
     scheduleId: "1234567890",
     eventId: "1234567890",
+    isVideoCall: false,
     notes:
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     user: randomUser,
@@ -251,6 +253,7 @@ const mockGenerator = (numberOfEvents: number): IEvent[] => {
       appointmentType: "Individual Session",
       scheduleId: "1234567890",
       eventId: "1234567890",
+      isVideoCall: false,
       notes:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
       user: USERS_MOCK[Math.floor(Math.random() * USERS_MOCK.length)],

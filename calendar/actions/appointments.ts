@@ -16,6 +16,22 @@ import {
   deleteCalendarEvent,
   updateCalendarEvent,
 } from "@/server/google/googleCalendar";
+import { createDailyRoom, deleteDailyRoom } from "@/server/video/daily";
+
+/**
+ * Sanitize a string into a valid Daily.co room name.
+ * Removes special chars, lowercases, truncates, and appends a short random suffix.
+ */
+function sanitizeRoomName(title: string): string {
+  const sanitized = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 40);
+  const suffix = Math.random().toString(36).slice(2, 8);
+  return `${sanitized || "session"}-${suffix}`;
+}
 
 function hasErrorCode(error: unknown): error is { code: string } {
   return error instanceof Object && 'code' in error;
@@ -99,6 +115,24 @@ export const createAppointment = async (data: unknown) => {
   // Fix #6: Use a single source of truth for duration
   const durationInMinutes = differenceInMinutes(endDateTime, startDateTime);
 
+  // --- Video call room creation (best-effort) ---
+  let videoCallUrl: string | null = null;
+  let videoCallRoomName: string | null = null;
+  let isVideoCall = false;
+
+  if (result.data.isVideoCall) {
+    const roomName = sanitizeRoomName(result.data.title || "consulta");
+    const room = await createDailyRoom({ roomName, expiryMinutes: durationInMinutes });
+
+    if (room) {
+      videoCallUrl = room.url;
+      videoCallRoomName = room.name;
+      isVideoCall = true;
+    } else {
+      console.error("Failed to create video call room — proceeding without video call.");
+    }
+  }
+
   // --- All checks passed — insert into DB first ---
   const dbData = {
     userId: user.id,
@@ -111,6 +145,9 @@ export const createAppointment = async (data: unknown) => {
     color: result.data.color || "blue",
     scheduleId: schedule.id,
     eventId: event.id,
+    isVideoCall,
+    videoCallUrl,
+    videoCallRoomName,
   };
 
   try {
@@ -278,6 +315,64 @@ export const updateAppointment = async (id: string, data: unknown) => {
 
   const durationInMinutes = differenceInMinutes(endDateTime, startDateTime);
 
+  // --- Video call state transitions ---
+  const wasVideoCall = existingAppointment.isVideoCall;
+  const wantsVideoCall = result.data.isVideoCall ?? false;
+  const timeChanged =
+    existingAppointment.startDateTime.getTime() !== startDateTime.getTime() ||
+    existingAppointment.endDateTime.getTime() !== endDateTime.getTime();
+
+  let videoCallUrl: string | null = existingAppointment.videoCallUrl;
+  let videoCallRoomName: string | null = existingAppointment.videoCallRoomName;
+  let isVideoCall = wasVideoCall;
+
+  if (wasVideoCall && !wantsVideoCall) {
+    // Video call disabled — GDPR: delete room and all data
+    if (existingAppointment.videoCallRoomName) {
+      const deleteResult = await deleteDailyRoom(existingAppointment.videoCallRoomName);
+      if (!deleteResult.success) {
+        console.error("Failed to delete Daily.co room:", deleteResult.error);
+      }
+    }
+    videoCallUrl = null;
+    videoCallRoomName = null;
+    isVideoCall = false;
+  } else if (!wasVideoCall && wantsVideoCall) {
+    // Video call newly enabled — create room
+    const roomName = sanitizeRoomName(result.data.title || "consulta");
+    const room = await createDailyRoom({ roomName, expiryMinutes: durationInMinutes });
+    if (room) {
+      videoCallUrl = room.url;
+      videoCallRoomName = room.name;
+      isVideoCall = true;
+    } else {
+      console.error("Failed to create video call room — proceeding without video call.");
+      videoCallUrl = null;
+      videoCallRoomName = null;
+      isVideoCall = false;
+    }
+  } else if (wasVideoCall && wantsVideoCall && timeChanged) {
+    // Time changed with active video call — delete old room, create new one
+    if (existingAppointment.videoCallRoomName) {
+      const deleteResult = await deleteDailyRoom(existingAppointment.videoCallRoomName);
+      if (!deleteResult.success) {
+        console.error("Failed to delete old Daily.co room:", deleteResult.error);
+      }
+    }
+    const roomName = sanitizeRoomName(result.data.title || "consulta");
+    const room = await createDailyRoom({ roomName, expiryMinutes: durationInMinutes });
+    if (room) {
+      videoCallUrl = room.url;
+      videoCallRoomName = room.name;
+      isVideoCall = true;
+    } else {
+      console.error("Failed to create new video call room — removing video call.");
+      videoCallUrl = null;
+      videoCallRoomName = null;
+      isVideoCall = false;
+    }
+  }
+
   const dbData = {
     userId: user.id,
     patientId: result.data.patientId,
@@ -289,6 +384,9 @@ export const updateAppointment = async (id: string, data: unknown) => {
     color: result.data.color || "blue",
     scheduleId: schedule.id,
     eventId: event.id,
+    isVideoCall,
+    videoCallUrl,
+    videoCallRoomName,
   };
 
   try {
@@ -356,10 +454,36 @@ export const rescheduleAppointment = async (
   const { existingAppointment, schedule, patient } = validation;
   const durationInMinutes = differenceInMinutes(endDateTime, startDateTime);
 
+  // --- Recreate video call room if appointment had one ---
+  let videoCallUrl: string | null = existingAppointment.videoCallUrl;
+  let videoCallRoomName: string | null = existingAppointment.videoCallRoomName;
+  let isVideoCall = existingAppointment.isVideoCall;
+
+  if (existingAppointment.isVideoCall && existingAppointment.videoCallRoomName) {
+    // Delete old room
+    const deleteResult = await deleteDailyRoom(existingAppointment.videoCallRoomName);
+    if (!deleteResult.success) {
+      console.error("Failed to delete old Daily.co room:", deleteResult.error);
+    }
+
+    // Create new room with updated expiry
+    const roomName = sanitizeRoomName(existingAppointment.title || "consulta");
+    const room = await createDailyRoom({ roomName, expiryMinutes: durationInMinutes });
+    if (room) {
+      videoCallUrl = room.url;
+      videoCallRoomName = room.name;
+    } else {
+      console.error("Failed to create new video call room — removing video call.");
+      videoCallUrl = null;
+      videoCallRoomName = null;
+      isVideoCall = false;
+    }
+  }
+
   try {
     const res = await db
       .update(appointments)
-      .set({ startDateTime, endDateTime })
+      .set({ startDateTime, endDateTime, videoCallUrl, videoCallRoomName, isVideoCall })
       .where(and(eq(appointments.id, id), eq(appointments.userId, user.id)))
       .returning();
 
@@ -416,6 +540,15 @@ export const deleteAppointment = async (id: string) => {
   }
 
   try {
+    // GDPR: Delete Daily.co room BEFORE deleting DB row — right to erasure
+    if (appointment.videoCallRoomName) {
+      const deleteResult = await deleteDailyRoom(appointment.videoCallRoomName);
+      if (!deleteResult.success) {
+        console.error("Failed to delete Daily.co room:", deleteResult.error);
+        // Continue to delete appointment from DB
+      }
+    }
+
     // Delete from Google Calendar if linked
     if (appointment.googleEventId) {
       const schedule = await getSchedule(user.id);

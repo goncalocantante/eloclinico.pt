@@ -189,6 +189,11 @@ export const appointments = pgTable("appointments", {
     .$onUpdate(() => new Date())
     .notNull(),
   source: text("source").notNull().default("manual"), // 'manual' or 'public'
+  // Video call fields — GDPR: only transient data stored, cleaned up after appointment ends.
+  // No call metadata, duration, participant info, or recordings are stored.
+  isVideoCall: boolean("is_video_call").notNull().default(false),
+  videoCallUrl: text("video_call_url"), // Daily.co join URL, deleted after appointment ends
+  videoCallRoomName: text("video_call_room_name"), // Daily.co room name for cleanup, deleted after appointment ends
 },
 (table) => [
   unique("unique_appointment_time_index").on(table.userId, table.startDateTime),

@@ -8,6 +8,7 @@ import {
   Check,
   ChevronDownIcon,
   ChevronsUpDown,
+  Video,
 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useSWR from "swr";
@@ -18,6 +19,8 @@ import { fetcher } from "@/lib/utils";
 import type { Patient } from "@/lib/db/schema";
 
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
@@ -97,6 +100,7 @@ export function EditAppointmentDialog({ children, event }: IProps) {
         "0"
       )}:${String(parseISO(event.endDate).getMinutes()).padStart(2, "0")}`,
       notes: event.notes,
+      isVideoCall: event.isVideoCall ?? false,
       color: (event.color as TEventColor) ?? "blue",
     },
   });
@@ -399,6 +403,27 @@ export function EditAppointmentDialog({ children, event }: IProps) {
                     </Select>
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="isVideoCall"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center gap-3 rounded-lg border p-3">
+                    <Video className="size-5 text-muted-foreground" />
+                    <Label htmlFor="isVideoCall-edit" className="flex-1 cursor-pointer">
+                      Videochamada
+                    </Label>
+                    <FormControl>
+                      <Switch
+                        id="isVideoCall-edit"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </div>
                 </FormItem>
               )}
             />

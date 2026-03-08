@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { Check, ChevronDownIcon, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronDownIcon, ChevronsUpDown, Video } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useSWR from "swr";
 import { addMinutes, format } from "date-fns";
@@ -59,6 +59,8 @@ import { eventSchema, TEventFormData } from "@/calendar/schemas";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface IProps {
   children?: React.ReactNode;
@@ -85,6 +87,7 @@ export function AddAppointmentDialog({ children }: IProps) {
       startTime: undefined,
       endTime: undefined,
       notes: "",
+      isVideoCall: false,
       color: "blue",
     },
   });
@@ -127,6 +130,7 @@ export function AddAppointmentDialog({ children }: IProps) {
         startTime: addAppointmentDialogState.startTime || undefined,
         endTime: addAppointmentDialogState.endTime || undefined,
         notes: "",
+        isVideoCall: false,
         color: "blue",
       });
     }
@@ -415,6 +419,27 @@ export function AddAppointmentDialog({ children }: IProps) {
                     </Select>
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="isVideoCall"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center gap-3 rounded-lg border p-3">
+                    <Video className="size-5 text-muted-foreground" />
+                    <Label htmlFor="isVideoCall" className="flex-1 cursor-pointer">
+                      Videochamada
+                    </Label>
+                    <FormControl>
+                      <Switch
+                        id="isVideoCall"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </div>
                 </FormItem>
               )}
             />

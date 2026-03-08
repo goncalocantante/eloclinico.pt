@@ -4,6 +4,28 @@ import { appointments } from "@/lib/db/schema";
 import type { TEventColor } from "@/calendar/types";
 import { eq } from "drizzle-orm";
 
+/**
+ * Fetches minimal appointment data for the public video call page.
+ * GDPR: Returns ONLY fields needed for the call — no patient PII, notes, or psychologist details.
+ * No authentication required — patients access via shared link.
+ */
+export async function getAppointmentForVideoCall(appointmentId: string) {
+  const [appointment] = await db
+    .select({
+      id: appointments.id,
+      title: appointments.title,
+      videoCallUrl: appointments.videoCallUrl,
+      videoCallRoomName: appointments.videoCallRoomName,
+      startDateTime: appointments.startDateTime,
+      endDateTime: appointments.endDateTime,
+    })
+    .from(appointments)
+    .where(eq(appointments.id, appointmentId))
+    .limit(1);
+
+  return appointment || null;
+}
+
 export async function getAppointments() {
   const user = await getUser();
   if (!user) {
