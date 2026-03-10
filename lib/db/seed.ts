@@ -24,9 +24,13 @@ async function seed() {
     const existingUser = await db.query.users.findFirst({
         where: eq(users.email, DEMO_USER_EMAIL)
     });
-
+ 
     if (existingUser) {
         console.log(`🗑️ Deleting existing demo user: ${DEMO_USER_EMAIL}`);
+        // Delete in correct order due to FK constraints (no cascade on schedules/events, restrict on appointments)
+        await db.delete(appointments).where(eq(appointments.userId, existingUser.id));
+        await db.delete(events).where(eq(events.userId, existingUser.id));
+        await db.delete(schedules).where(eq(schedules.userId, existingUser.id));
         await db.delete(users).where(eq(users.email, DEMO_USER_EMAIL));
     }
 

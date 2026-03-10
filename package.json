@@ -73,7 +73,8 @@
   "devDependencies": {
     "@faker-js/faker": "^10.1.0",
     "eslint": "^9.39.1",
-    "eslint-config-next": "16.0.8"
+    "eslint-config-next": "16.0.8",
+    "tsx": "^4.21.0"
   },
   "pnpm": {
     "overrides": {
