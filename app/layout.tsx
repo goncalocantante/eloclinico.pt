@@ -6,6 +6,7 @@ import { SWRConfig } from "swr";
 import { getAppointments } from "@/lib/db/queries/appointment-queries";
 import { getEvents } from "@/server/actions/events";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "next-themes"; // Added: manages light/dark mode by changing the class on <html>
 
 export const metadata: Metadata = {
   title: "Elo - Gestão de Consultório de Psicologia",
@@ -27,23 +28,29 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`bg-white dark:bg-gray-950 text-black dark:text-white ${manrope.className}`}
+      suppressHydrationWarning // Prevents hydration mismatch warnings when theme is applied on the client
+      className={`${manrope.className} bg-white text-black dark:bg-gray-950 dark:text-white`} // Base light/dark colors
     >
-      <body className="min-h-[100dvh] bg-gray-50">
-        <SWRConfig
-          value={{
-            fallback: {
-              // We do NOT await here
-              // Only components that read this data will suspend
-              "/api/user": getUser(),
-              "/api/appointments": getAppointments(),
-              "/api/events": getEvents(),
-            },
-          }}
+      <body>
+        <ThemeProvider
+          attribute="class" // Tells next-themes to add/remove "dark" on the html element
+          defaultTheme="light" // Light mode is the default when the app loads
+          enableSystem={false} // Ignores the device OS theme so it always starts in light mode
+          disableTransitionOnChange // Avoids flickering when switching theme
         >
-          {children}
-          <Toaster />
-        </SWRConfig>
+          <SWRConfig
+            value={{
+              fallback: {
+                user: getUser(),
+                appointments: getAppointments(),
+                events: getEvents(),
+              },
+            }}
+          >
+            {children}
+            <Toaster />
+          </SWRConfig>
+        </ThemeProvider>
       </body>
     </html>
   );
