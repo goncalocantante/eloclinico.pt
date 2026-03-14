@@ -17,6 +17,7 @@ import { fetcher } from "@/lib/utils";
 import useSWR from "swr";
 import { User } from "@/lib/db/schema";
 import Logo from "@/components/logo";
+import { ThemeToggle } from "@/components/ui/theme_toggle"; // Dark/light mode toggle button
 
 // Navigation items configuration (without isActive - it's calculated dynamically)
 const navItems = [
@@ -67,12 +68,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <Logo />
+        <div className="flex items-center justify-between">
+          <Logo />
+          <div className="group-data-[collapsible=icon]:hidden">
+            <ThemeToggle />
+          </div>
+        </div>
       </SidebarHeader>
+
       <SidebarContent>
         <NavMain items={navMain} />
         <NavMain label="Público" items={publicItems} />
       </SidebarContent>
+
       <SidebarFooter>
         <NavUser
           user={{
@@ -82,6 +90,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           }}
         />
       </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
   );

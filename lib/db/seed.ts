@@ -33,6 +33,7 @@ async function seed() {
         await db.delete(schedules).where(eq(schedules.userId, existingUser.id));
         await db.delete(users).where(eq(users.email, DEMO_USER_EMAIL));
     }
+    // This ensures a clean slate for the demo user, allowing us to run this seed multiple times without issues.
 
     // 2. Create Demo User via Better Auth API to ensure password hashing is correct
     console.log("👤 Creating demo user...");
