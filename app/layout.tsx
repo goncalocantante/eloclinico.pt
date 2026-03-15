@@ -7,6 +7,7 @@ import { getAppointments } from "@/lib/db/queries/appointment-queries";
 import { getEvents } from "@/server/actions/events";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes"; // Added: manages light/dark mode by changing the class on <html>
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "Elo - Gestão de Consultório de Psicologia",
@@ -49,6 +50,7 @@ export default function RootLayout({
           >
             {children}
             <Toaster />
+            <SpeedInsights />
           </SWRConfig>
         </ThemeProvider>
       </body>
